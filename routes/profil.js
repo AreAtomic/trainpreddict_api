@@ -9,8 +9,9 @@ const { validationResult } = require('express-validator')
  */
 const Profil = require('../models/Profil')
 const Utilisateur = require('../models/Utilisateur')
+const InfoSup = require('../models/InfoSup')
 
-/** 
+/**
  * @route post /api/profil
  * @description création du profil
  * */
@@ -21,7 +22,14 @@ router.post('/:userId', async (req, res) => {
         return res.status(200).json({ error: "Le formulaire n'est pas valide" })
     }
 
-    const { fcfs, pfs, age, poids } = req.body
+    const { fcfs, pfs, poids } = req.body
+    let age = 14
+    if (req.body.age) {
+        age = req.body.age
+    } else {
+        const infoSup = await InfoSup.findOne({ _utilisateur: req.params.userId })
+        age = Math.abs(dayjs(infoSup.naissance).diff(dayjs()))
+    }
 
     const profilInfo = {
         fcfs,
