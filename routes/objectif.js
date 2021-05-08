@@ -27,6 +27,7 @@ router.post(
         check('titre', 'Le titre est requis').exists(),
     ],
     async (req, res) => {
+        console.log(req.body)
         const utilisateur = req.params.userId
 
         const {
@@ -69,21 +70,11 @@ router.post(
                 }
             }
 
-            objectif = new Objectif({
-                _utilisateur: utilisateur,
-                date_debut: dayjs(date_debut).toISOString(),
-                date_objectif: dayjs(date_objectif).toISOString(),
-                type: type,
-                resultat_vise: resultat_vise,
-                titre: titre,
-                description: description.join(', '),
-                distance: distance,
-                denivele: denivele,
-                temps: temps,
-                realise: false,
-            })
+            objectif = new Objectif(objectifInfo)
 
-            await objectif.save()
+            objectif.save()
+
+            console.log(objectif)
 
             return res
                 .status(200)

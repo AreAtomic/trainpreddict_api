@@ -40,6 +40,7 @@ function sort(tab) {
  */
 router.post('/:userId', async (req, res) => {
     // Données du plan
+    console.log("Plan")
     const utilisateur = req.params.userId
     const date_debut = dayjs(req.body.date_debut)
     const date_fin = dayjs(req.body.date_fin)
@@ -49,6 +50,8 @@ router.post('/:userId', async (req, res) => {
     const donneesUtilisateur = await DonneesUtilisateur.findOne({
         _utilisateur: utilisateur,
     })
+
+    console.log(objectif, objectif[0])
 
     // Création du plan
     const seances = await calculPlan(objectif[0], donneesUtilisateur, false)
@@ -75,6 +78,8 @@ router.post('/:userId', async (req, res) => {
     })
 
     plan.save()
+
+    console.log(plan)
 
     // Pousse on mongodb
     return res.status(200).json({ data: plan, msg: 'Nouveau plan créé' })

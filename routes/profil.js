@@ -4,6 +4,7 @@
 const express = require('express')
 const router = express.Router()
 const { validationResult } = require('express-validator')
+const dayjs = require('dayjs')
 /**
  * @import Models
  */
@@ -23,12 +24,13 @@ router.post('/:userId', async (req, res) => {
     }
 
     const { fcfs, pfs, poids } = req.body
+    console.log(req.body)
     let age = 14
     if (req.body.age) {
         age = req.body.age
     } else {
         const infoSup = await InfoSup.findOne({ _utilisateur: req.params.userId })
-        age = Math.abs(dayjs(infoSup.naissance).diff(dayjs()))
+        age = Math.abs(dayjs(infoSup.naissance).diff(dayjs(), 'year'))
     }
 
     const profilInfo = {

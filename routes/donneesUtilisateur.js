@@ -14,6 +14,7 @@ const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
  */
 router.post('/:userId', async (req, res) => {
     try {
+        console.log(req.body)
         const {
             sse,
             experience,
@@ -82,6 +83,7 @@ router.post('/:userId', async (req, res) => {
             { new: true, upsert: true }
         )
 
+        console.log(donneesUtilisateur)
         return res
             .status(200)
             .json({ data: donneesUtilisateur, msg: `Donnée mises à jour` })
