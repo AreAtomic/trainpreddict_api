@@ -4,13 +4,20 @@ const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
 const favicon = require('express-favicon')
 const path = require('path')
+const http = require('http')
 const https = require('https')
 const fs = require('fs')
+const dotenv = require('dotenv')
 
 /*
  * Connexion Database *
  */
 connectDB()
+
+/**
+ * dotenv config
+ */
+dotenv.config()
 
 /*
  * Setting express *
@@ -38,35 +45,41 @@ const app = express()
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
 
-// Décoder pour la prod
-// app.use(function (req, res, next) {
-//   res.header('Access-Control-Allow-Origin', 'trainpreddict.fr');
-//   res.header(
-//     'Access-Control-Headers',
-//     'Origin, X-Requested-With, Content-Type, Accept'
-//   );
-//   next()
-// });
-// // Certificats
-// const privateKey = fs.readFileSync(
-//     '/etc/letsencrypt/live/trainpreddict.fr/privkey.pem'
-// )
-// const certificate = fs.readFileSync(
-//     '/etc/letsencrypt/live/trainpreddict.fr/cert.pem'
-// )
-// const ca = fs.readFileSync('/etc/letsencrypt/live/trainpreddict.fr/chain.pem')
+// Production mode
+if (process.env.NODE_ENV != 'development') {
+    app.use(function (req, res, next) {
+        res.header('Access-Control-Allow-Origin', 'trainpreddict.fr')
+        res.header(
+            'Access-Control-Headers',
+            'Origin, X-Requested-With, Content-Type, Accept'
+        )
+        next()
+    })
+    // Certificats
+    const privateKey = fs.readFileSync(
+        '/etc/letsencrypt/live/trainpreddict.fr/privkey.pem'
+    )
+    const certificate = fs.readFileSync(
+        '/etc/letsencrypt/live/trainpreddict.fr/cert.pem'
+    )
+    const ca = fs.readFileSync(
+        '/etc/letsencrypt/live/trainpreddict.fr/chain.pem'
+    )
 
-// const credentials = {
-//     key: privateKey,
-//     cert: certificate,
-//     ca: ca,
-// }
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca,
+    }
 
-// const httpServer = http.createServer((req, res) => {
-//     res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` })
-//     res.end()
-// })
-// const httpsServer = https.createServer(credentials, app).listen(5000)
+    const httpServer = http.createServer((req, res) => {
+        res.writeHead(301, {
+            Location: `https://${req.headers.host}${req.url}`,
+        })
+        res.end()
+    })
+    const httpsServer = https.createServer(credentials, app).listen(5000)
+}
 
 /*
  * ROUTER *
@@ -114,4 +127,4 @@ app.use('/api/admin', cors(corsOptionsDelegate), require('./routes/admin'))
 
 const PORT = process.env.PORT || 5000
 
-app.listen(5000, () => console.log('Server running on PORT 5000'))
+app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
