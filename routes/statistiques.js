@@ -4,102 +4,146 @@
 const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
-var weekOfYear = require('dayjs/plugin/weekOfYear')
+let weekOfYear = require('dayjs/plugin/weekOfYear')
+var isoWeeksInYear = require('dayjs/plugin/isoWeeksInYear')
+var isLeapYear = require('dayjs/plugin/isLeapYear')
 dayjs.extend(weekOfYear)
+dayjs.extend(isoWeeksInYear)
+dayjs.extend(isLeapYear)
 /**
  * @import Models
  */
-const Entrainement = require('../models/Entrainement.js')
-const Statistiques = require('../models/Statistiques.js')
+const Entrainement = require('../models/Entrainement')
+const Statistiques = require('../models/Statistiques')
+const Utilisateur = require('../models/Utilisateur')
 
 const toHoursInt = (duree) => {
-    var hours = parseInt(duree.substr(0, 2))
+    let hours = parseInt(duree.substr(0, 2))
     const minutes = parseFloat(parseInt(duree.substr(3, 5)) / 60).toPrecision(1)
     hours = Math.round(parseFloat(hours) + parseFloat(minutes))
     return hours
 }
 
 /**
- * @route api/donneesUtilisateur
- * @description Permet de créer un plan d'entrainement pour l'utilisateur 
+ * @route /api/statistiques/:userId
+ * @description Initialise les statisques pour tous les utilisateurs
  */
 router.post('/:userId', async (req, res) => {
     try {
-        const entrainements = await Entrainement.find({
-            _utilisateur: req.params.userId,
+        const utilisateur = await Utilisateur.findOne({
+            _id: req.params.userId,
         })
-        const date = dayjs()
-        var kilometres_total = 0
-        var kilometres_ans = 0
-        var kilometres_mois = 0
-        var kilometres_semaine = 0
-        var heures_total = 0
-        var heures_ans = 0
-        var heures_mois = 0
-        var heures_semaine = 0
-        var sorties_total = entrainements.length
-        var sorties_ans = 0
-        var sorties_mois = 0
-        var sorties_semaine = 0
 
-        for (let i = 0; i < entrainements.length; i++) {
-            let date_entrainement = dayjs(entrainements[i].date)
-            kilometres_total += parseInt(entrainements[i].distance)
-            heures = toHoursInt(entrainements[i].duree)
-            heures_total += heures
+        console.log(utilisateur)
 
-            if (date_entrainement.year() == date.year()) {
-                kilometres_ans += parseInt(entrainements[i].distance)
-                heures_ans += heures
-                sorties_ans += 1
-
-                if (date_entrainement.month() == date.month()) {
-                    kilometres_mois += parseInt(entrainements[i].distance)
-                    heures_mois += heures
-                    sorties_mois += 1
-
-                    if (dayjs(date_entrainement).week() == dayjs(date).week()) {
-                        kilometres_semaine += parseInt(
-                            entrainements[i].distance
-                        )
-                        heures_semaine += heures
-                        sorties_semaine += 1
-                    }
-                }
-            }
+        const month = {
+            janvier: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            février: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            mars: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            avril: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            mai: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            juin: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            juillet: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            aout: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            septembre: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            octobre: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            novembre: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
+            decembre: {
+                kilometres: 0,
+                heures: 0,
+                sse: 0,
+                gain_forme: +0,
+            },
         }
 
-        const statistiques = await Statistiques.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
-            {
-                $set: {
-                    // Total depuis utilisation appli
-                    total_kilometres: kilometres_total,
-                    total_heures: heures_total,
-                    total_sorties: sorties_total,
-                    // Total sur l'année
-                    an_kilometres: kilometres_ans,
-                    an_heures: heures_ans,
-                    an_sorties: sorties_ans,
-                    // Total sur le mois
-                    mois_kilometres: kilometres_mois,
-                    mois_heures: heures_mois,
-                    mois_sorties: sorties_mois,
-                    // Semaine
-                    semaine_kilometres: kilometres_semaine,
-                    semaine_heures: heures_semaine,
-                    semaine_sorties: sorties_semaine,
-                },
-            },
-            { new: true, upsert: true }
-        )
+        const entrainement = []
+        for (let i = 2000; i < 2100; i++) {
+            let year = { [i]: { mois: month, semaines: {} } }
+            let weeks = {}
+            const weekofyear = dayjs(`${i}-01-01`).isoWeeksInYear()
+            for (let j = 1; j <= weekofyear; j++) {
+                weeks[`S${j}`] = {
+                    kilometres: 0,
+                    heures: 0,
+                    sse: 0,
+                    gain_forme: +0,
+                }
+            }
+            year[i].semaines = weeks
+            entrainement.push(year)
+        }
+
+        const statistiques = new Statistiques({
+            _utilisateur: utilisateur.id,
+            entrainement: entrainement,
+            reccord_20_minutes: 0,
+            reccord_5_minutes: 0,
+            reccord_1_minutes: 0,
+            recourd_5_seconds: 0,
+        })
+
+        statistiques.save()
 
         return res
             .status(200)
-            .json({ data: statistiques, msg: `Donnée mises à jour` })
-    } catch (error) {
-        console.log(error)
-        return res.status(200).json({ error: 'Server error' })
+            .json({ data: statistiques, msg: 'Statiques créée avec succès' })
+    } catch (e) {
+        return res.status(200).json({ error: 'Network error' })
     }
 })
 

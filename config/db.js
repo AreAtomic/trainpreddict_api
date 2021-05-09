@@ -1,3 +1,12 @@
+/**
+ * Config .env
+ */
+const dotenv = require('dotenv')
+dotenv.config()
+
+/**
+ * Config mongo
+ */
 const mongoose = require('mongoose')
 const config = require('config')
 const db = process.env.MONGO || config.get('mongoURI')

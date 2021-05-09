@@ -8,56 +8,99 @@ const StatistiqueSchema = new Schema({
         ref: 'Utilisateur',
     },
     // Total depuis utilisation appli
-    total_kilometres: {
-        type: Number,
-        default: 0,
+    entrainement: {
+        type: Array,
+        example: [
+            {
+                2020: {
+                    mois: {
+                        janvier: {
+                            kilometres: 1000,
+                            heures: 34,
+                            sse: 3500,
+                            gain_forme: +30,
+                        },
+                        février: {
+                            kilometres: 1200,
+                            heures: 40,
+                            sse: 3900,
+                            gain_forme: +40,
+                        },
+                        mars: {
+                            kilometres: 1200,
+                            heures: 40,
+                            sse: 3900,
+                            gain_forme: -5,
+                        },
+                    },
+                    semaines: {
+                        S1: {
+                            kilometres: 200,
+                            heures: 14,
+                            sse: 700,
+                            gain_forme: +5,
+                        },
+                        S2: {
+                            kilometres: 250,
+                            heures: 15,
+                            sse: 710,
+                            gain_forme: +7,
+                        },
+                    },
+                },
+            },
+            {
+                2021: {
+                    mois: {
+                        janvier: {
+                            kilometres: 1000,
+                            heures: 34,
+                            sse: 3500,
+                            gain_forme: +30,
+                        },
+                        février: {
+                            kilometres: 1200,
+                            heures: 40,
+                            sse: 3900,
+                            gain_forme: +40,
+                        },
+                        mars: {
+                            kilometres: 1200,
+                            heures: 40,
+                            sse: 3900,
+                            gain_forme: -5,
+                        },
+                    },
+                    semaines: {
+                        S1: {
+                            kilometres: 200,
+                            heures: 14,
+                            sse: 700,
+                            gain_forme: +5,
+                        },
+                        S2: {
+                            kilometres: 250,
+                            heures: 15,
+                            sse: 710,
+                            gain_forme: +7,
+                        },
+                    },
+                },
+            },
+        ],
     },
-    total_heures: {
+
+    reccord_20_minutes: {
         type: Number,
-        default: 0,
     },
-    total_sorties: {
+    reccord_5_minutes: {
         type: Number,
-        default: 0,
     },
-    // Total sur l'année
-    an_kilometres: {
+    reccord_1_minutes: {
         type: Number,
-        default: 0,
     },
-    an_heures: {
+    recourd_5_seconds: {
         type: Number,
-        default: 0,
-    },
-    an_sorties: {
-        type: Number,
-        default: 0,
-    },
-    // Total sur le mois
-    mois_kilometres: {
-        type: Number,
-        default: 0,
-    },
-    mois_heures: {
-        type: Number,
-        default: 0,
-    },
-    mois_sorties: {
-        type: Number,
-        default: 0,
-    },
-    // Semaine
-    semaine_kilometres: {
-        type: Number,
-        default: 0,
-    },
-    semaine_heures: {
-        type: Number,
-        default: 0,
-    },
-    semaine_sorties: {
-        type: Number,
-        default: 0,
     },
 })
 
