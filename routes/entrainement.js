@@ -1121,19 +1121,3 @@ const power_zone = (pp) => {
     }
     return 1
 }
-
-// Tri bulle
-function sort(tab) {
-    let changed = false
-    do {
-        for (let i = 0; i < tab.length - 1; i++) {
-            if (dayjs(tab[i].date).isBefore(dayjs(tab[i + 1].date))) {
-                let tmp = tab[i]
-                tab[i] = tab[i + 1]
-                tab[i + 1] = tmp
-                changed = true
-            }
-        }
-    } while (changed)
-    return tab
-}

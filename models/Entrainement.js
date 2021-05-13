@@ -142,6 +142,12 @@ const EntrainementSchema = new Schema({
     point_carte: {
         type: Array,
     },
+
+    // Prise en compte dans les statistiques
+    statistiques: {
+        type: Boolean,
+        default: false,
+    }
 })
 
 module.exports = mongoose.model('Entrainement', EntrainementSchema)
