@@ -78,72 +78,84 @@ router.post('/:userId/initialisation', async (req, res) => {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             fevrier: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             mars: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             avril: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             mai: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             juin: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             juillet: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             aout: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             septembre: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             octobre: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             novembre: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
             decembre: {
                 kilometres: 0,
                 heures: 0,
                 sse: 0,
+                nombre_entrainement: 0,
                 gain_forme: +0,
             },
         }
@@ -158,6 +170,7 @@ router.post('/:userId/initialisation', async (req, res) => {
                     kilometres: 0,
                     heures: 0,
                     sse: 0,
+                    nombre_entrainement: 0,
                     gain_forme: +0,
                 }
             }
@@ -190,7 +203,7 @@ router.post('/:userId/initialisation', async (req, res) => {
  */
 router.post('/:userId/updateOne', async (req, res) => {
     try {
-        console.log("Pas bon")
+        console.log('Pas bon')
         const months = [
             'janvier',
             'fevrier',
@@ -228,6 +241,9 @@ router.post('/:userId/updateOne', async (req, res) => {
         statistiques.entrainement[year - 2000][year].mois[
             month
         ].sse += parseInt(entrainement.score_stress_entrainement)
+        statistiques.entrainement[year - 2000][year].mois[
+            month
+        ].nombre_entrainement += 1
 
         // Entrainement de la semaine
         statistiques.entrainement[year - 2000][year].semaines[
@@ -239,6 +255,9 @@ router.post('/:userId/updateOne', async (req, res) => {
         statistiques.entrainement[year - 2000][year].semaines[
             `S${week}`
         ].sse += parseInt(entrainement.score_stress_entrainement)
+        statistiques.entrainement[year - 2000][year].semaines[
+            `S${week}`
+        ].nombre_entrainement += 1
 
         // Mise à jour
         statistiques = await Statistiques.findOneAndUpdate(
@@ -307,6 +326,9 @@ router.post('/:userId', async (req, res) => {
                 statistiques.entrainement[year - 2000][year].mois[
                     month
                 ].sse += parseInt(entrainement.score_stress_entrainement)
+                statistiques.entrainement[year - 2000][year].mois[
+                    month
+                ].nombre_entrainement += 1
 
                 // Entrainement de la semaine
                 statistiques.entrainement[year - 2000][year].semaines[
@@ -318,6 +340,9 @@ router.post('/:userId', async (req, res) => {
                 statistiques.entrainement[year - 2000][year].semaines[
                     `S${week}`
                 ].sse += parseInt(entrainement.score_stress_entrainement)
+                statistiques.entrainement[year - 2000][year].semaines[
+                    `S${week}`
+                ].nombre_entrainement += 1
 
                 // Mise à jour
                 statistiques = await Statistiques.findOneAndUpdate(
