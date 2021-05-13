@@ -1056,6 +1056,87 @@ router.post('/:userId/delete/:entrainementId', async (req, res) => {
     })
 })
 
+/**
+ * @route GET api/entrainement/:entrainementId/performance
+ * @description Calcule les performance
+ */
+router.get('/:entrainementId/performance', async (req, res) => {
+    const entrainement = await Entrainement.findOne({
+        _id: req.params.entrainementId,
+    })
+
+    let max_20_mins = 0
+    let max_5_mins = 0
+    let max_1_min = 0
+    let max_5_secs = 0
+
+    let points = entrainement.power_seconds
+
+    if (!points) {
+        return res.status(200).json({
+            error: 'Impossible de trouver des statistiques de puissance',
+        })
+    }
+
+    for (let i = 0; i < points.length; i++) {
+        if (i > 4) {
+            max_5_secs =
+                moyenneArray(points.slice(i - 5, i)) > max_5_secs
+                    ? moyenneArray(points.slice(i - 5, i))
+                    : max_5_secs
+            if (i > 59) {
+                max_1_min =
+                    moyenneArray(points.slice(i - 60, i)) > max_1_min
+                        ? moyenneArray(points.slice(i - 60, i))
+                        : max_1_min
+
+                if (i > 299) {
+                    max_5_mins =
+                        moyenneArray(points.slice(i - 300, i)) > max_5_mins
+                            ? moyenneArray(points.slice(i - 300, i))
+                            : max_5_mins
+
+                    if (i > 1199) {
+                        max_20_mins =
+                            moyenneArray(points.slice(i - 1200, i)) >
+                            max_20_mins
+                                ? moyenneArray(points.slice(i - 1200, i))
+                                : max_20_mins
+                    } else {
+                        max_20_mins = moyenneArray(points)
+                    }
+                } else {
+                    max_5_mins = moyenneArray(points)
+                }
+            } else {
+                max_1_min = moyenneArray(points)
+            }
+        } else {
+            max_5_secs = moyenneArray(points)
+            max_1_min = moyenneArray(points)
+            max_5_mins = moyenneArray(points)
+            max_20_mins = moyenneArray(points)
+        }
+    }
+
+    console.log({
+        reccord_20_minutes: max_20_mins,
+        reccord_5_minutes: max_5_mins,
+        reccord_1_minutes: max_1_min,
+        recourd_5_seconds: max_5_secs,
+    })
+
+    return res.status(200).json({
+        data: {
+            reccord_20_minutes: max_20_mins,
+            reccord_5_minutes: max_5_mins,
+            reccord_1_minutes: max_1_min,
+            recourd_5_seconds: max_5_secs,
+        },
+        msg: "Récupération des performances de l'entrainement",
+    })
+})
+
 module.exports = router
 
 // Convertisseurs
@@ -1120,4 +1201,13 @@ const power_zone = (pp) => {
         return 2
     }
     return 1
+}
+
+moyenneArray = (arr) => {
+    let nombres = arr.length,
+        valeurs = 0
+    for (let i = 0; i < nombres; i++) {
+        valeurs += Number(arr[i])
+    }
+    return parseInt(valeurs / nombres)
 }
