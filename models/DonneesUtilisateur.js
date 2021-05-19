@@ -57,6 +57,10 @@ const DonneesUtilisateurSchema = new Schema({
         type: Boolean,
         required: true,
     },
+    ppg: {
+        type: Boolean,
+        default: true,
+    },
     etirement: {
         type: Boolean,
         required: true,

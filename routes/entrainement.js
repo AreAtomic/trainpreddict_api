@@ -5,6 +5,8 @@ const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
 const FitParser = require('fit-file-parser').default
+const axios = require('axios')
+
 /**
  * @import Models
  */
@@ -1061,7 +1063,7 @@ router.post('/:userId/delete/:entrainementId', async (req, res) => {
  * @description Calcule les performance
  */
 router.get('/:entrainementId/performance', async (req, res) => {
-    const entrainement = await Entrainement.findOne({
+    let entrainement = await Entrainement.findOne({
         _id: req.params.entrainementId,
     })
 
@@ -1119,22 +1121,142 @@ router.get('/:entrainementId/performance', async (req, res) => {
         }
     }
 
-    console.log({
-        reccord_20_minutes: max_20_mins,
-        reccord_5_minutes: max_5_mins,
-        reccord_1_minutes: max_1_min,
-        recourd_5_seconds: max_5_secs,
+    const profil = await Profil.findOne({
+        _utilisateur: entrainement._utilisateur,
     })
+
+    entrainement = await Entrainement.findOneAndUpdate(
+        { _id: req.params.entrainementId },
+        {
+            $set: {
+                tableau_statistiques: {
+                    max_20_mins: [max_20_mins, max_20_mins / profil.poids],
+                    max_5_mins: [max_5_mins, max_5_mins / profil.poids],
+                    max_1_min: [max_1_min, max_1_min / profil.poids],
+                    max_5_secs: [max_5_secs, max_5_secs / profil.poids],
+                },
+            },
+        },
+        { upsert: true }
+    )
 
     return res.status(200).json({
         data: {
-            reccord_20_minutes: max_20_mins,
-            reccord_5_minutes: max_5_mins,
-            reccord_1_minutes: max_1_min,
-            recourd_5_seconds: max_5_secs,
+            tableau: entrainement.tableau_statistiques,
         },
         msg: "Récupération des performances de l'entrainement",
     })
+})
+
+/**
+ * @route POST /api/entrainement/statistiques/all
+ * @description Met à jour tous les entrainements avec le tableau de stats
+ */
+router.post('/statistiques/all', async (req, res) => {
+    try {
+        const entrainements = await Entrainement.find({})
+
+        for (let i = 0; i < entrainements.length; i++) {
+            let entrainement = await Entrainement.findOne({
+                _id: entrainements[i]._id,
+            })
+
+            let max_20_mins = 0
+            let max_5_mins = 0
+            let max_1_min = 0
+            let max_5_secs = 0
+
+            let points = entrainement.power_seconds
+
+            if (points) {
+                for (let i = 0; i < points.length; i++) {
+                    if (i > 4) {
+                        max_5_secs =
+                            moyenneArray(points.slice(i - 5, i)) > max_5_secs
+                                ? moyenneArray(points.slice(i - 5, i))
+                                : max_5_secs
+                        if (i > 59) {
+                            max_1_min =
+                                moyenneArray(points.slice(i - 60, i)) >
+                                max_1_min
+                                    ? moyenneArray(points.slice(i - 60, i))
+                                    : max_1_min
+
+                            if (i > 299) {
+                                max_5_mins =
+                                    moyenneArray(points.slice(i - 300, i)) >
+                                    max_5_mins
+                                        ? moyenneArray(points.slice(i - 300, i))
+                                        : max_5_mins
+
+                                if (i > 1199) {
+                                    max_20_mins =
+                                        moyenneArray(
+                                            points.slice(i - 1200, i)
+                                        ) > max_20_mins
+                                            ? moyenneArray(
+                                                  points.slice(i - 1200, i)
+                                              )
+                                            : max_20_mins
+                                } else {
+                                    max_20_mins = moyenneArray(points)
+                                }
+                            } else {
+                                max_5_mins = moyenneArray(points)
+                            }
+                        } else {
+                            max_1_min = moyenneArray(points)
+                        }
+                    } else {
+                        max_5_secs = moyenneArray(points)
+                        max_1_min = moyenneArray(points)
+                        max_5_mins = moyenneArray(points)
+                        max_20_mins = moyenneArray(points)
+                    }
+                }
+
+                const profil = await Profil.findOne({
+                    _utilisateur: entrainement._utilisateur,
+                })
+
+                entrainement = await Entrainement.findOneAndUpdate(
+                    { _id: req.params.entrainementId },
+                    {
+                        $set: {
+                            tableau_statistiques: {
+                                max_20_mins: [
+                                    max_20_mins,
+                                    max_20_mins / profil.poids,
+                                ],
+                                max_5_mins: [
+                                    max_5_mins,
+                                    max_5_mins / profil.poids,
+                                ],
+                                max_1_min: [
+                                    max_1_min,
+                                    max_1_min / profil.poids,
+                                ],
+                                max_5_secs: [
+                                    max_5_secs,
+                                    max_5_secs / profil.poids,
+                                ],
+                            },
+                        },
+                    },
+                    { upsert: true }
+                )
+
+                console.log(entrainement.tableau_statistiques)
+            }
+        }
+
+        return res
+            .status(200)
+            .json({ data: entrainement, msg: 'Entrainement mis à jour' })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({ error: 'Network error' })
+    }
 })
 
 module.exports = router

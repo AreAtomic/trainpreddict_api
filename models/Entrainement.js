@@ -147,7 +147,13 @@ const EntrainementSchema = new Schema({
     statistiques: {
         type: Boolean,
         default: false,
-    }
+    },
+    tableau_statistiques: {
+        max_20_mins: { type: Array },
+        max_5_mins: { type: Array },
+        max_1_min: { type: Array },
+        max_5_secs: { type: Array },
+    },
 })
 
 module.exports = mongoose.model('Entrainement', EntrainementSchema)
