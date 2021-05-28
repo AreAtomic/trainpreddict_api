@@ -10,14 +10,17 @@ const CourbesReaSchema = new Schema({
     forme: {
         type: Array,
         required: true,
+        example: [[50, "...", 0], [0, "...", 0]]
     },
     fatigue: {
         type: Array,
         required: true,
+        example: [[150, "...", 0], [0, "...", 0]]
     },
     labels: {
         type: Array,
         required: true,
+        example: [["01/01/2000", "...", "31/12/2000"], ["01/01/2100", "...", "31/12/2100"]]
     },
 })
 

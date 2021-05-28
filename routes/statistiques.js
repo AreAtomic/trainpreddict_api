@@ -285,6 +285,10 @@ router.post('/:userId', async (req, res) => {
         let entrainements = await Entrainement.find({
             _utilisateur: req.params.userId,
         })
+        let max_20_mins = 0
+        let max_5_mins = 0
+        let max_1_min = 0
+        let max_5_secs = 0
 
         for (let i = 0; i < entrainements.length; i++) {
             if (
@@ -343,6 +347,11 @@ router.post('/:userId', async (req, res) => {
                 statistiques.entrainement[year - 2000][year].semaines[
                     `S${week}`
                 ].nombre_entrainement += 1
+
+                // Récup des stats des reccord d'entrainements
+                if(entrainement.tableau_statistiques != null || entrainement.tableau_statistiques != undefined){
+                    entrainement.tableau_statistiques.max_20_mins > max_20_mins
+                }
 
                 // Mise à jour
                 statistiques = await Statistiques.findOneAndUpdate(

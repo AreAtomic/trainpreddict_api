@@ -1035,10 +1035,18 @@ router.get('/:userId', async (req, res) => {
  * @description Permet de récupérer une séances avec son id
  */
 router.get('/:userId/analyse/:entrainementId', async (req, res) => {
+    axios
+        .get(
+            `http://localhost:5000/api/entrainement/${req.params.entrainementId}/performance`
+        )
+        .then()
+        .catch()
+
     const seance = await Entrainement.find({
         _utilisateur: req.params.userId,
         _id: req.params.entrainementId,
     })
+
     return res.status(200).json({ data: seance })
 })
 

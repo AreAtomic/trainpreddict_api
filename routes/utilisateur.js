@@ -4,6 +4,7 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
+const axios = require('axios')
 /**
  * @import Models
  */
@@ -69,7 +70,7 @@ router.post('/:userId/password', async (req, res) => {
 /**
  * @route POST api/utilisateur/:userId/password/lost
  * @description Envoie d'un mail pour récupération du mot de passe
- *  */ 
+ *  */
 router.post('/:userId/password/lost', async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
@@ -94,6 +95,29 @@ router.post('/:userId/password/lost', async (req, res) => {
     } catch (e) {
         console.log(e)
         return res.status(200).json({ error: 'Serveur erreur', log: e })
+    }
+})
+
+/**
+ * @route /api/utilisateurs/update/all/courbes
+ * @description Mide à jour des courbes des utilisateurs
+ */
+router.post('/update/all/courbes', async (req, res) => {
+    try {
+        const utilisateurs = await Utilisateur.find({})
+
+        for (let i = 0; i < utilisateurs.length; i++) {
+            axios.post(
+                `http://localhost:5000/api/courbes/${utilisateurs[i]._id}/update/realise`
+            )
+        }
+
+        return res
+            .status(200)
+            .json({ msg: 'Courbes des utilisateurs misent à jour' })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({ error: e })
     }
 })
 

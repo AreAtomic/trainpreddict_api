@@ -4,6 +4,8 @@
 const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
+const dayOfYear = require('dayjs/plugin/dayOfYear')
+dayjs.extend(dayOfYear)
 /**
  * @import Models
  */
@@ -30,10 +32,10 @@ router.get('/:userId', async (req, res) => {
 })
 
 /**
- * @route POST /api/courbes/:userId/create
+ * @route POST /api/courbes/:userId/create/previsionnelle
  * @description Création des courbes
  */
-router.post('/:userId/create', async (req, res) => {
+router.post('/:userId/create/previsionnelle', async (req, res) => {
     try {
         const utilisateur = req.params.userId
         const plans = await Plan.find({ _utilisateur: utilisateur })
@@ -42,12 +44,29 @@ router.post('/:userId/create', async (req, res) => {
         let tss = []
         let labels = []
 
+        // Création des labels et des courbes de 2000 à 2100
+        for (let i = 2000; i < 2101; i++) {
+            let days = []
+            let array_year = []
+            let lastday = dayjs(`${i}-12-31`).dayOfYear()
+
+            for (let j = 1; j < lastday; j++) {
+                days.push(dayjs(`${i}-01-01`).dayOfYear(j).format('MM/DD/YYYY'))
+                array_year.push(0)
+            }
+            forme.push(array_year)
+            fatigue.push(array_year)
+            labels.push(days)
+        }
+
+        // Rajout des données des plans dans les courbes
         for (let i = 0; i < plans.length; i++) {
             let seances_definies = plans[i].SeancesDefinies
 
             for (let j = 0; j < seances_definies.length; j++) {
                 const seance = seances_definies[j]
-                labels.push(dayjs(seance[1]).format('MM/DD/YYYY'))
+                let year = dayjs(seance[1]).year() - 2000
+                let day = dayjs(seance[1]).dayOfYear()
 
                 if (typeof seance[0] != 'string') {
                     tss.push(seance[0].score_stress_entrainement)
@@ -68,23 +87,20 @@ router.post('/:userId/create', async (req, res) => {
                     }
                 }
                 tss_forme = tss.concat(tss_forme)
-                forme.push(
-                    moyenneArray(
-                        tss_forme.slice(tss_forme.length - 42, tss_forme.length)
-                    )
+                forme[year][day] = moyenneArray(
+                    tss_forme.slice(tss_forme.length - 42, tss_forme.length)
                 )
                 tss_fatigue = tss.concat(tss_fatigue)
-                fatigue.push(
-                    moyenneArray(
-                        tss_fatigue.slice(
-                            tss_fatigue.length - 7,
-                            tss_fatigue.length
-                        )
+                fatigue[year][day] = moyenneArray(
+                    tss_fatigue.slice(
+                        tss_fatigue.length - 7,
+                        tss_fatigue.length
                     )
                 )
             }
         }
 
+        // Update de la bdd
         let courbesPrev = await CourbePrev.findOneAndUpdate(
             { _utilisateur: utilisateur },
             { $set: { forme: forme, fatigue: fatigue, labels: labels } },
@@ -100,25 +116,59 @@ router.post('/:userId/create', async (req, res) => {
             })
         }
 
-        let rea = new Array(labels.length).fill(0)
+        courbesPrev.save()
+
+        return res
+            .status(200)
+            .json({ data: { courbesPrev }, msg: 'Courbes créées' })
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({ error: 'Erreur serveur' })
+    }
+})
+
+/**
+ * @route POST /api/courbes/:userId/create/realise
+ * @description Création des courbes
+ */
+router.post('/:userId/create/realise', async (req, res) => {
+    try {
+        const utilisateur = req.params.userId
+        let forme = []
+        let fatigue = []
+        let labels = []
+
+        // Création des labels et des courbes de 2000 à 2100
+        for (let i = 2000; i < 2101; i++) {
+            let days = []
+            let array_year = []
+            let lastday = dayjs(`${i}-12-31`).dayOfYear()
+
+            for (let j = 1; j < lastday; j++) {
+                days.push(dayjs(`${i}-01-01`).dayOfYear(j).format('MM/DD/YYYY'))
+                array_year.push(0)
+            }
+            forme.push(array_year)
+            fatigue.push(array_year)
+            labels.push(days)
+        }
 
         let courbesRea = await CourbeRea.findOne({ _utilisateur: utilisateur })
 
         if (!courbesRea) {
             courbesRea = new CourbeRea({
                 _utilisateur: utilisateur,
-                forme: rea,
-                fatigue: rea,
+                forme: forme,
+                fatigue: fatigue,
                 labels: labels,
             })
         }
 
-        courbesPrev.save()
         courbesRea.save()
 
         return res
             .status(200)
-            .json({ data: { courbesPrev, courbesRea }, msg: 'Courbes créées' })
+            .json({ data: { courbesRea }, msg: 'Courbes créées' })
     } catch (e) {
         console.log(e)
         return res.status(200).json({ error: 'Erreur serveur' })
@@ -129,86 +179,73 @@ router.post('/:userId/create', async (req, res) => {
  * @route POST /api/courbes/:userId/realise
  * @description Modification des courbes réalisés
  */
-router.post('/:userId/realise', async (req, res) => {
+router.post('/:userId/update/realise', async (req, res) => {
     try {
         const utilisateur = req.params.userId
 
-        // courbes stocké
+        // Récup des courbes stocké
         let courbesRea = await CourbeRea.findOne({
             _utilisateur: utilisateur,
         })
         let forme = courbesRea.forme
         let fatigue = courbesRea.fatigue
         let labels = courbesRea.labels
+        let today = dayjs()
 
-        // entrainements
+        // Récup des entrainements
         let entrainements = await Entrainement.find({
             _utilisateur: utilisateur,
         })
+
+        // Récu pdes dates pour comparaison avec label
         let date_entrainements = []
-        let date_min = dayjs()
-
-        for (let i = 0; i < entrainements.length; i++) {
-            date_entrainements.push(
-                dayjs(entrainements[i].date).format('MM/DD/YYYY')
-            )
-            if (dayjs(entrainements[i].date).isBefore(date_min)) {
-                date_min = dayjs(entrainements[i].date).format('MM/DD/YYYY')
-            }
-        }
-
-        // Entrainement avant les entrainements déjà enregistré
-        if (dayjs(date_min).isBefore(dayjs(labels[0]))) {
-            let diff = dayjs(labels[0]).diff(dayjs(date_min), 'day')
-            let newLabels = []
-            let newRea = new Array(diff).fill(0)
-
-            for (let i = 0; i < diff; i++) {
-                let date = dayjs(date_min).add(i, 'day')
-                newLabels.push(date.format('MM/DD/YYYY'))
-            }
-
-            labels = newLabels.concat(labels)
-            forme = newRea.concat(forme)
-            fatigue = newRea.concat(fatigue)
+        for (let e = 0; e < entrainements.length; e++) {
+            date_entrainements.push(entrainements[e].date.split('T')[0])
         }
 
         let tss = []
-        for (let i = 0; i < labels.length; i++) {
-            let date = dayjs(labels[i]).format('MM/DD/YYYY')
-            labels[i] = dayjs(labels[i]).format('MM/DD/YYYY')
+        for (let j = 0; j < today.year() - 1999; j++) {
+            for (let i = 0; i < labels[j].length; i++) {
+                let date = dayjs(labels[j][i])
+                    .set('hour', 22)
+                    .toISOString()
+                    .split('T')[0]
+                console.log(date)
 
-            if (date_entrainements.indexOf(date) != -1) {
-                tss.push(
-                    entrainements[date_entrainements.indexOf(date)]
-                        .score_stress_entrainement
-                )
-            } else {
-                tss.push(0)
-            }
-
-            let tss_forme = []
-            let tss_fatigue = []
-            if (tss.length < 42) {
-                tss_forme = new Array(42 - tss.length).fill(0)
-                if (tss.length < 7) {
-                    tss_fatigue = new Array(7 - tss.length).fill(0)
+                if (date_entrainements.indexOf(date) != -1) {
+                    tss.push(
+                        entrainements[date_entrainements.indexOf(date)]
+                            .score_stress_entrainement
+                    )
+                } else {
+                    tss.push(0)
                 }
+
+                let tss_forme = []
+                let tss_fatigue = []
+                if (tss.length < 42) {
+                    tss_forme = new Array(42 - tss.length).fill(0)
+                    if (tss.length < 7) {
+                        tss_fatigue = new Array(7 - tss.length).fill(0)
+                    }
+                }
+
+                // Forme
+                tss_forme = tss.concat(tss_forme)
+                forme[j][i] = moyenneArray(
+                    tss_forme.slice(tss_forme.length - 42, tss_forme.length)
+                )
+
+                // Fatigue
+                tss_fatigue = tss.concat(tss_fatigue)
+                fatigue[j][i] = moyenneArray(
+                    tss_fatigue.slice(
+                        tss_fatigue.length - 7,
+                        tss_fatigue.length
+                    )
+                )
             }
-
-            // Forme
-            tss_forme = tss.concat(tss_forme)
-            forme[i] = moyenneArray(
-                tss_forme.slice(tss_forme.length - 42, tss_forme.length)
-            )
-
-            // Fatigue
-            tss_fatigue = tss.concat(tss_fatigue)
-            fatigue[i] = moyenneArray(
-                tss_fatigue.slice(tss_fatigue.length - 7, tss_fatigue.length)
-            )
         }
-
         courbesRea = await CourbeRea.findOneAndUpdate(
             { _utilisateur: utilisateur },
             { $set: { forme: forme, fatigue: fatigue, labels: labels } },
@@ -218,7 +255,6 @@ router.post('/:userId/realise', async (req, res) => {
         const courbesPrev = await CourbePrev.findOne({
             _utilisateur: utilisateur,
         })
-
         return res.status(200).json({
             data: { courbesPrev, courbesRea },
             msg: 'Courbes mise à jour',
@@ -233,21 +269,22 @@ router.post('/:userId/realise', async (req, res) => {
  * @route POST /api/courbes/:userId/previsionnelle
  * @description Modifications des courbes prévisionnelles
  */
-router.post('/:userId/previsionnelle', async (req, res) => {
+router.post('/:userId/update/previsionnelle', async (req, res) => {
     try {
         const utilisateur = req.params.userId
         const plans = await Plan.find({ _utilisateur: utilisateur })
-        let forme = []
-        let fatigue = []
+        let courbePrev = await CourbePrev.findOne({ _utilisateur: utilisateur })
+        let forme = courbePrev.forme
+        let fatigue = courbePrev.fatigue
         let tss = []
-        let labels = []
 
         for (let i = 0; i < plans.length; i++) {
             let seances_definies = plans[i].SeancesDefinies
 
             for (let j = 0; j < seances_definies.length; j++) {
                 const seance = seances_definies[j]
-                labels.push(dayjs(seance[1]).format('MM/DD/YYYY'))
+                let year = dayjs(seance[1]).year() - 2000
+                let day = dayjs(seance[1]).dayOfYear()
 
                 if (typeof seance[0] != 'string') {
                     tss.push(seance[0].score_stress_entrainement)
@@ -268,18 +305,14 @@ router.post('/:userId/previsionnelle', async (req, res) => {
                     }
                 }
                 tss_forme = tss.concat(tss_forme)
-                forme.push(
-                    moyenneArray(
-                        tss_forme.slice(tss_forme.length - 42, tss_forme.length)
-                    )
+                forme[year][day] = moyenneArray(
+                    tss_forme.slice(tss_forme.length - 42, tss_forme.length)
                 )
                 tss_fatigue = tss.concat(tss_fatigue)
-                fatigue.push(
-                    moyenneArray(
-                        tss_fatigue.slice(
-                            tss_fatigue.length - 7,
-                            tss_fatigue.length
-                        )
+                fatigue[year][day] = moyenneArray(
+                    tss_fatigue.slice(
+                        tss_fatigue.length - 7,
+                        tss_fatigue.length
                     )
                 )
             }
@@ -289,7 +322,7 @@ router.post('/:userId/previsionnelle', async (req, res) => {
             {
                 _utilisateur: utilisateur,
             },
-            { $set: { forme: forme, fatigue: fatigue, labels: labels } },
+            { $set: { forme: forme, fatigue: fatigue } },
             { new: true, upsert: true }
         )
 
