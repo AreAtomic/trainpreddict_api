@@ -1253,8 +1253,6 @@ router.post('/statistiques/all', async (req, res) => {
                     },
                     { upsert: true }
                 )
-
-                console.log(entrainement.tableau_statistiques)
             }
         }
 

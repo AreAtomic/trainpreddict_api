@@ -17,6 +17,7 @@ dayjs.extend(isLeapYear)
 const Entrainement = require('../models/Entrainement')
 const Statistiques = require('../models/Statistiques')
 const Utilisateur = require('../models/Utilisateur')
+const { statSync } = require('fs')
 
 const toHoursInt = (duree) => {
     let hours = parseInt(duree.substr(0, 2))
@@ -304,15 +305,20 @@ router.post('/:userId', async (req, res) => {
         let entrainements = await Entrainement.find({
             _utilisateur: req.params.userId,
         })
-        let max_20_mins = 0
-        let max_5_mins = 0
-        let max_1_min = 0
-        let max_5_secs = 0
+
+        let statistiques = await Statistiques.findOne({
+            _utilisateur: req.params.userId,
+        })
+
+        let max_20_mins = statistiques.reccord_20_minutes
+        let max_5_mins = statistiques.reccord_5_minutes
+        let max_1_min = statistiques.reccord_1_minutes
+        let max_5_secs = statistiques.recourd_5_seconds
 
         for (let i = 0; i < entrainements.length; i++) {
             if (
                 entrainements[i].statistiques == undefined ||
-                !entrainements[i].statistiques
+                entrainements[i].statistiques
             ) {
                 const months = [
                     'janvier',
@@ -328,7 +334,7 @@ router.post('/:userId', async (req, res) => {
                     'novembre',
                     'decembre',
                 ]
-                let statistiques = await Statistiques.findOne({
+                statistiques = await Statistiques.findOne({
                     _utilisateur: req.params.userId,
                 })
 
@@ -368,7 +374,6 @@ router.post('/:userId', async (req, res) => {
                 ].nombre_entrainement += 1
 
                 // Récup des stats des reccord d'entrainements
-                console.log(entrainement.tableau_statistiques)
                 if (
                     entrainement.tableau_statistiques.max_20_mins[0] != null
                 ) {
@@ -417,14 +422,8 @@ router.post('/:userId', async (req, res) => {
                     { $set: { statistiques: true } },
                     { upsert: true }
                 )
-
-                console.log(`${entrainement.id}: mis à jour`)
             }
         }
-
-        const statistiques = await Statistiques.findOne({
-            _utilisateur: req.params.userId,
-        })
 
         return res.status(200).json({
             data: statistiques,
