@@ -203,7 +203,6 @@ router.post('/:userId/initialisation', async (req, res) => {
  */
 router.post('/:userId/updateOne', async (req, res) => {
     try {
-        console.log('Pas bon')
         const months = [
             'janvier',
             'fevrier',
@@ -258,6 +257,26 @@ router.post('/:userId/updateOne', async (req, res) => {
         statistiques.entrainement[year - 2000][year].semaines[
             `S${week}`
         ].nombre_entrainement += 1
+
+        statistiques.reccord_20_minutes =
+            statistiques.reccord_20_minutes >= entrainement.max_20_mins
+                ? statistiques.reccord_20_minutes
+                : entrainement.max_20_mins
+
+        statistiques.reccord_5_minutes =
+            statistiques.reccord_5_minutes >= entrainement.max_5_mins
+                ? statistiques.reccord_5_minutes
+                : entrainement.max_5_mins
+
+        statistiques.reccord_1_minutes =
+            statistiques.reccord_1_minutes >= entrainement.max_1_min
+                ? statistiques.reccord_1_minutes
+                : entrainement.max_1_min
+
+        statistiques.recourd_5_seconds =
+            statistiques.recourd_5_seconds >= entrainement.max_5_secs
+                ? statistiques.recourd_5_seconds
+                : entrainement.max_5_secs
 
         // Mise à jour
         statistiques = await Statistiques.findOneAndUpdate(
@@ -349,14 +368,47 @@ router.post('/:userId', async (req, res) => {
                 ].nombre_entrainement += 1
 
                 // Récup des stats des reccord d'entrainements
-                if(entrainement.tableau_statistiques != null || entrainement.tableau_statistiques != undefined){
-                    entrainement.tableau_statistiques.max_20_mins > max_20_mins
+                console.log(entrainement.tableau_statistiques)
+                if (
+                    entrainement.tableau_statistiques.max_20_mins[0] != null
+                ) {
+                    max_20_mins =
+                        statistiques.reccord_20_minutes >=
+                        entrainement.tableau_statistiques.max_20_mins[0]
+                            ? statistiques.reccord_20_minutes
+                            : entrainement.tableau_statistiques.max_20_mins[0]
+
+                    max_5_mins =
+                        statistiques.reccord_5_minutes >=
+                        entrainement.tableau_statistiques.max_5_mins[0]
+                            ? statistiques.reccord_5_minutes
+                            : entrainement.tableau_statistiques.max_5_mins[0]
+
+                    max_1_min =
+                        statistiques.reccord_1_minutes >=
+                        entrainement.tableau_statistiques.max_1_min[0]
+                            ? statistiques.reccord_1_minutes
+                            : entrainement.tableau_statistiques.max_1_min[0]
+
+                    max_5_secs =
+                        statistiques.recourd_5_seconds >=
+                        entrainement.tableau_statistiques.max_5_secs[0]
+                            ? statistiques.recourd_5_seconds
+                            : entrainement.tableau_statistiques.max_5_secs[0]
                 }
 
                 // Mise à jour
                 statistiques = await Statistiques.findOneAndUpdate(
                     { _utilisateur: req.params.userId },
-                    { $set: { entrainement: statistiques.entrainement } },
+                    {
+                        $set: {
+                            entrainement: statistiques.entrainement,
+                            reccord_20_minutes: max_20_mins,
+                            reccord_5_minutes: max_5_mins,
+                            reccord_1_minutes: max_1_min,
+                            recourd_5_seconds: max_5_secs,
+                        },
+                    },
                     { upsert: true }
                 )
 

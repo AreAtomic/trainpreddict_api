@@ -115,10 +115,10 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
     var jours = fin.diff(debut, 'day')
     var seances = []
 
-    for (let i=0; i < jours; i+=7) {
-        let debut_semaine = debut.add(i/7, 'week')
+    for (let i = 0; i < jours; i += 7) {
+        let debut_semaine = debut.add(i / 7, 'week')
         let sem = await defSemaine(
-            i/7,
+            i / 7,
             debut_semaine,
             date_objectif,
             donneesUtilisateur,
@@ -126,6 +126,7 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
             ht
         )
         seances.push(sem)
+        console.log(sem)
     }
     return seances
 }
@@ -173,6 +174,7 @@ const choixSeances = async (
     var jours_entrainements = jourEntrainement(
         donneesUtilisateur.nombre_seance_semaine
     )
+    console.log(debut.format('DD/MM/YYYY'), semaine_passee)
     // Calcul SSE et choix des jours d'entrainements
     if (semaine_passee >= 0) {
         if (semaine_passee > 1) {
@@ -229,7 +231,11 @@ const choixSeances = async (
     var pre_semaine = []
     var semaine = []
 
-    let sse_seance = sse / (donneesUtilisateur.nombre_seance_semaine - 2)
+    let sse_seance =
+        sse /
+        (donneesUtilisateur.nombre_seance_semaine > 2
+            ? donneesUtilisateur.nombre_seance_semaine - 2
+            : donneesUtilisateur.nombre_seance_semaine)
     if (ht) {
         sse_seance = sse_seance / 2
         for (let i = 0; i < seances_possible.length; i++) {
@@ -273,8 +279,8 @@ const choixSeances = async (
         } else {
             semaine.push(['repos', dayjs(debut).add(i, 'day').toISOString()])
         }
-        return semaine
     }
+    return semaine
 }
 
 module.exports = calculPlan
