@@ -7,42 +7,42 @@ var seances
 // Classification de toutes les séances par types
 const fecthAllSeances = async () => {
     var foncier = await axios.post(
-        `http://localhost:5000/api/seance/type/`,
+        `http://localhost:6001/api/seance/type/`,
         {
             type: ['Foncier'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var seuil = await axios.post(
-        `http://localhost:5000/api/seance/type/`,
+        `http://localhost:6001/api/seance/type/`,
         {
             type: ['Seuil'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var pma = await axios.post(
-        `http://localhost:5000/api/seance/type/`,
+        `http://localhost:6001/api/seance/type/`,
         {
             type: ['PMA'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var vo2max = await axios.post(
-        `http://localhost:5000/api/seance/type/`,
+        `http://localhost:6001/api/seance/type/`,
         {
             type: ['VO2 Max'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var rythme = await axios.post(
-        `http://localhost:5000/api/seance/type/`,
+        `http://localhost:6001/api/seance/type/`,
         {
             type: ['Rythme'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var recup = await axios.post(
-        'http://localhost:5000/api/seance/type/',
+        'http://localhost:6001/api/seance/type/',
         {
             type: ['Recuperation'],
         },
