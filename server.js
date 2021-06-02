@@ -24,11 +24,17 @@ dotenv.config()
  */
 var whitelist = [
     'http://localhost:5000',
+    'https://localhost:5000',
     'http://localhost:3000',
     'https://localhost:3000',
     'http://localhost',
+    'https://localhost',
+    'http://localhost:6001',
+    'https://localhost:6001',
     'http://trainpreddict.fr',
     'https://trainpreddict.fr',
+    'https://trainpreddict.fr:3000',
+    'https://trainpreddict.fr:6001',
 ]
 
 var corsOptionsDelegate = function (req, callback) {
@@ -78,7 +84,7 @@ if (process.env.NODE_ENV != 'development') {
         })
         res.end()
     })
-    const httpsServer = https.createServer(credentials, app).listen(5000)
+    const httpsServer = https.createServer(credentials, app).listen(6001)
 }
 
 /*
@@ -125,7 +131,7 @@ app.use(
 )
 app.use('/api/admin', cors(corsOptionsDelegate), require('./routes/admin'))
 
-
-const PORT = process.env.PORT || 5000
-
-app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
+if (process.env.NODE_ENV == 'development') {
+    const PORT = process.env.PORT || 5000
+    app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
+}
