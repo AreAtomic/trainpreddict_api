@@ -49,7 +49,7 @@ router.post(
             type: type,
             resultat_vise: resultat_vise,
             titre: titre,
-            description: description,
+            description: description.toString(),
             distance: distance,
             denivele: denivele,
             temps: temps,
@@ -68,10 +68,22 @@ router.post(
                             "Impossible de créer un objectif pour lequel tu commences à t'entrainer avant la fin d'un autre objectif",
                     })
                 }
+
             }
 
-            objectif = new Objectif(objectifInfo)
+           var date_d=new Date(date_debut)
+           var date_o=new Date(date_objectif)
+            if((date_o.getMonth() - date_d.getMonth())<3){
 
+                return res.status(200).json({error: 
+                    "Il doit y a avoir au moins 3 mois d'écart entre le début de l'entrainement et la réalisation de l'objectif"})
+
+            }
+
+           
+            objectif = new Objectif(objectifInfo)
+            
+            
             objectif.save()
 
             console.log(objectif)

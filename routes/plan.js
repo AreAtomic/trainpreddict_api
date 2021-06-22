@@ -56,7 +56,8 @@ router.post('/:userId', async (req, res) => {
     // Création du plan
     const seances = await calculPlan(objectif[0], donneesUtilisateur, false)
     console.log(seances[seances.length - 1])
-
+    
+    
     let seances_definies = []
     for (let i = 0; i < seances.length; i++) {
         for (j = 0; j < seances[i].length; j++) {

@@ -169,7 +169,11 @@ router.post(
  * @description Permet de récupérer une séances avec son id
  */
 router.get('/id/:id', async (req, res) => {
-    const seance = await Seance.findOne({ _id: req.params.id })
+    
+        var mongo = require('mongodb');
+        var seance_id = new mongo.ObjectID( req.params.id);
+        const seance= await Seance.findOne({'_id': seance_id});
+    
     return res.status(200).json({ data: seance })
 })
 
@@ -195,7 +199,7 @@ router.get('/:userId/date/:date', async (req, res) => {
  * @route GET api/seance
  * @description Permet de récupérer des séances avec leur type
  */
-router.post('/type', async (req, res) => {
+router.get('/type', async (req, res) => {
     const type = req.body.type
     let seances = await Seance.find({ type: { $in: type } })
 

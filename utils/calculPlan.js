@@ -2,9 +2,31 @@ const dayjs = require('dayjs')
 const axios = require('axios')
 const e = require('express')
 const { header } = require('express-validator')
+const Seances= require("../models/Seance")
 var seances
 
 // Classification de toutes les séances par types
+
+
+const fecthAllSeances = async () => {
+    var seance_foncier=Seances.find(type="Foncier")
+    var seance_seuil=Seances.find(type="Seuil")
+    var seance_pma=Seances.find(type="PMA")
+    var seance_vo2max=Seances.find(type="VO2 Max")
+    var seance_rythme=Seances.find(type="Rythme")
+    var seance_recup=Seances.find(type="Recuperation")
+    return {
+        Foncier: seance_foncier.data.data.seances,
+        Seuil: seance_seuil.data.data.seances,
+        PMA: seance_pma.data.data.seances,
+        VO2_Max: seance_vo2max.data.data.seances,
+        Rythme: seance_rythme.data.data.seances,
+        Recup: seance_recup.data.data.seances
+    }
+}
+
+
+/*
 const fecthAllSeances = async () => {
     var foncier = await axios.post(
         `https://trainpreddict.fr:6001/api/seance/type/`,
@@ -58,7 +80,7 @@ const fecthAllSeances = async () => {
         Recup: recup.data.data.seances,
     }
 }
-
+*/
 // Définitions des coefficents de sse pour chaque jour de la semaine
 const jourEntrainement = (nombre_seance_semaine) => {
     if (nombre_seance_semaine > 1) {
@@ -106,6 +128,7 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
     ]
 
     seances = await fetching()
+    if(seances!=null){
     let seances_type = seances
     /*
     Definition semaine
@@ -127,6 +150,9 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
         )
         seances.push(sem)
         console.log(sem)
+    }}
+    else{
+        seances=res.status(200).json({  msg: "il n'y a aucune seance a retourner" })
     }
     return seances
 }
