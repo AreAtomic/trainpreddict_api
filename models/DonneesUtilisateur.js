@@ -37,6 +37,7 @@ const DonneesUtilisateurSchema = new Schema({
         required: true,
     },
     jours_repos: [
+        
         {
             type: String,
             enum: [

@@ -73,10 +73,10 @@ router.post('/:userId', async (req, res) => {
             musculation: musculation,
             ppg: ppg,
             etirement: etirement,
-            foncier: foncier.toString(),
-            style: style.toString(),
-            point_faible: point_faible.toString(),
-            jours_repos: jours_repos.toString(),
+            foncier: foncier,
+            style: style,
+            point_faible: point_faible,
+            jours_repos: jours_repos,
         }
 
         const donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
