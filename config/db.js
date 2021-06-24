@@ -10,7 +10,6 @@ dotenv.config()
 const mongoose = require('mongoose')
 const config = require('config')
 const db = process.env.MONGO || config.get('mongoURI')
-console.log(db)
 
 const connectDB = async () => {
     try {

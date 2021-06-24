@@ -2,47 +2,54 @@ const dayjs = require('dayjs')
 const axios = require('axios')
 const e = require('express')
 const { header } = require('express-validator')
-var seances
+const dotenv = require('dotenv')
+let API_URL = "http://localhost:5000/api"
 
+dotenv.config()
+if (process.env.NODE_ENV != 'development') {
+    API_URL = "https://trainpreddict.fr:6001"
+}
+    
+let seances
 // Classification de toutes les séances par types
 const fecthAllSeances = async () => {
     var foncier = await axios.post(
-        `https://trainpreddict.fr:6001/api/seance/type/`,
+        `${API_URL}/seance/type/`,
         {
             type: ['Foncier'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var seuil = await axios.post(
-        `https://trainpreddict.fr:6001/api/seance/type/`,
+        `${API_URL}/seance/type/`,
         {
             type: ['Seuil'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var pma = await axios.post(
-        `https://trainpreddict.fr:6001/api/seance/type/`,
+        `${API_URL}/seance/type/`,
         {
             type: ['PMA'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var vo2max = await axios.post(
-        `https://trainpreddict.fr:6001/api/seance/type/`,
+        `${API_URL}/seance/type/`,
         {
             type: ['VO2 Max'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var rythme = await axios.post(
-        `https://trainpreddict.fr:6001/api/seance/type/`,
+        `${API_URL}/seance/type/`,
         {
             type: ['Rythme'],
         },
         { headers: { 'Content-Type': 'application/json' } }
     )
     var recup = await axios.post(
-        'http://trainpreddict.fr:6001/api/seance/type/',
+        `${API_URL}/seance/type/`,
         {
             type: ['Recuperation'],
         },

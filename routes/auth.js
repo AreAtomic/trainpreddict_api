@@ -4,9 +4,10 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
-const { check, validationResult } = require('express-validator')
 const nodemailer = require('nodemailer')
 const dayjs = require('dayjs')
+const jwt = require('jsonwebtoken')
+const config = require('config')
 const hasher = 10
 /**
  * @import Models
@@ -14,126 +15,111 @@ const hasher = 10
 const Utilisateur = require('../models/Utilisateur')
 const InfoSup = require('../models/InfoSup')
 const Profil = require('../models/Profil')
-const { MongoTimeoutError } = require('mongodb')
 
 /**
  * @route post api/auth/login
  * @description Authentification et création d'un token pour l'utilisateur
  */
-router.post(
-    '/login',
-    [
-        check('email', 'Email invalide').isEmail(),
-        check('mot_de_passe', 'Mot de passe requis').exists(),
-    ],
-    async (req, res) => {
-        const errors = validationResult(req)
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() })
+router.post('/login', async (req, res) => {
+    const { email, mot_de_passe } = req.body
+
+    try {
+        let utilisateur = await Utilisateur.findOne({ email })
+        if (!utilisateur) {
+            return res.status(400).json({ error: "L'email est invalide" })
         }
 
-        const { email, mot_de_passe } = req.body
+        const isMatch = await bcrypt.compare(
+            mot_de_passe,
+            utilisateur.mot_de_passe
+        )
 
-        try {
-            let utilisateur = await Utilisateur.findOne({ email })
-            if (!utilisateur) {
-                return res.status(400).json({ error: "L'email est invalide" })
-            }
-
-            const isMatch = await bcrypt.compare(
-                mot_de_passe,
-                utilisateur.mot_de_passe
-            )
-
-            if (!isMatch) {
-                return res.status(400).json({ error: 'Mot de passe invalide' })
-            }
-
-            return res.status(200).json({
-                id: utilisateur.id,
-                nom: utilisateur.nom,
-                prenom: utilisateur.prenom,
-            })
-        } catch (err) {
-            res.status(500).json({ error: 'Serveur erreur' })
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Mot de passe invalide' })
         }
+
+        utilisateur.token = jwt.sign(
+            { id: utilisateur._id },
+            config.get('secret'),
+            { expiresIn: '10d' }
+        )
+
+        return res.status(200).json({
+            id: utilisateur.id,
+            nom: utilisateur.nom,
+            prenom: utilisateur.prenom,
+            token: utilisateur.token,
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Serveur erreur' })
     }
-)
+})
 
 /**
  * @route POST api/auth/signup
  * @description Register utilisateur
  */
-router.post(
-    '/signup',
-    [
-        check('nom', 'Le nom est requis').not().isEmpty(),
-        check('prenom', 'Le prénom est requis').not().isEmpty(),
-        check('email', 'Please include a valid email').isEmail(),
-        check(
-            'mot_de_passe',
-            "Rentre un mot de passe d'au moins 1 caractère"
-        ).isLength({ min: 12 }),
-    ],
-    async (req, res) => {
-        const errors = validationResult(req)
-        const {
-            // Info de connexion
+router.post('/signup', async (req, res) => {
+    const {
+        // Info de connexion
+        nom,
+        prenom,
+        email,
+        mot_de_passe,
+        mot_de_passe2,
+    } = req.body
+
+    if (mot_de_passe != mot_de_passe2) {
+        return res
+            .status(200)
+            .json({ error: 'Les mots de passe ne sont pas les mêmes' })
+    }
+
+    try {
+        let utilisateur = await Utilisateur.findOne({ email: email })
+        if (utilisateur != null || utilisateur != undefined) {
+            if (utilisateur.email == email) {
+                // Cas ou ce n'est pas le même utilisateur mais qu'il a mis la même adresse mail
+                return res
+                    .status(200)
+                    .json({ error: "L'adresse email est déjà utilisée" })
+            }
+        }
+
+        utilisateur = new Utilisateur({
             nom,
             prenom,
             email,
             mot_de_passe,
-            mot_de_passe2,
-        } = req.body
+        })
 
-        if (mot_de_passe != mot_de_passe2) {
-            return res
-                .status(200)
-                .json({ error: 'Les mots de passe ne sont pas les mêmes' })
-        }
+        const salt = await bcrypt.genSalt(hasher)
 
-        if (!errors.isEmpty()) {
-            return res.status(200).json({ error: errors.array() })
-        }
+        utilisateur.mot_de_passe = await bcrypt.hash(mot_de_passe, salt)
 
-        try {
-            let utilisateur = await Utilisateur.findOne({ email: email })
-            if (utilisateur != null || utilisateur != undefined) {
-                if (utilisateur.email == email) {
-                    // Cas ou ce n'est pas le même utilisateur mais qu'il a mis la même adresse mail
-                    return res
-                        .status(200)
-                        .json({ error: "L'adresse email est déjà utilisée" })
-                }
-            }
+        await utilisateur.save()
 
-            utilisateur = new Utilisateur({
-                nom,
-                prenom,
-                email,
-                mot_de_passe,
-            })
+        utilisateur.token = jwt.sign(
+            { id: utilisateur._id },
+            config.get('secret'),
+            { expiresIn: '10d' }
+        )
 
-            const salt = await bcrypt.genSalt(hasher)
-
-            utilisateur.mot_de_passe = await bcrypt.hash(mot_de_passe, salt)
-
-            await utilisateur.save()
-
-            return res.status(200).json({
-                data: {
-                    id: utilisateur.id,
-                    nom: utilisateur.nom,
-                    prenom: utilisateur.prenom,
-                },
-                msg: 'Utilisateur créé avec succés',
-            })
-        } catch (err) {
-            console.log(err)
-            return res.status(200).json({ error: 'Server error' })
-        }
+        return res.status(200).json({
+            data: {
+                id: utilisateur.id,
+                nom: utilisateur.nom,
+                prenom: utilisateur.prenom,
+                token: utilisateur.token,
+            },
+            msg: 'Utilisateur créé avec succés',
+        })
+    } catch (err) {
+        console.log(err)
+        return res.status(200).json({ error: 'Server error' })
     }
-)
+})
 
 /**
  * @route api/:userId/infosup

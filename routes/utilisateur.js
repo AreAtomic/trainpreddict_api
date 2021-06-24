@@ -5,6 +5,7 @@ const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
 const axios = require('axios')
+const { jwtauth } = require('../middlewares/auth.middleware')
 /**
  * @import Models
  */
@@ -14,12 +15,15 @@ const Utilisateur = require('../models/Utilisateur')
  * @route get api/utilisateur/:id
  * @description Récupération du token en cours
  * */
-router.get('/:userId', async (req, res) => {
+router.get('/', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = await Utilisateur.findById(
-            req.params.userId
-        ).select('-mot_de_passe')
-        return res.status(200).send(utilisateur)
+        const utilisateur = await Utilisateur.findById(req.utilisateur._id)
+        return res.status(200).json({
+            id: utilisateur.id,
+            nom: utilisateur.nom,
+            prenom: utilisateur.prenom,
+            token: req.utilisateur.token,
+        })
     } catch (err) {
         console.error(err.message)
         return res.status(500).send('Server erreur')
@@ -30,7 +34,7 @@ router.get('/:userId', async (req, res) => {
  *  @route POST api/utilisateur/:userId/password
  *  @description Changement de mot de passe quand l'utilisateur est connecté
  * */
-router.post('/:userId/password', async (req, res) => {
+router.post('/password', [jwtauth], async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
         const last = req.body.last
@@ -41,7 +45,7 @@ router.post('/:userId/password', async (req, res) => {
                 .json({ error: 'Les deux mot de passe ne sont pas identiques' })
         }
 
-        let user = await Utilisateur.findOne({ _id: req.params.userId })
+        const user = await Utilisateur.findById(req.utilisateur._id)
 
         const password = await bcrypt.hash(req.body.password, salt)
         const isMatch = await bcrypt.compare(last, user.mot_de_passe)
@@ -71,7 +75,7 @@ router.post('/:userId/password', async (req, res) => {
  * @route POST api/utilisateur/:userId/password/lost
  * @description Envoie d'un mail pour récupération du mot de passe
  *  */
-router.post('/:userId/password/lost', async (req, res) => {
+router.post('/password/lost', async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
 

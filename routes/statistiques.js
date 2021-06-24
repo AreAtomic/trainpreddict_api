@@ -4,6 +4,7 @@
 const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
+const axios = require('axios')
 let weekOfYear = require('dayjs/plugin/weekOfYear')
 var isoWeeksInYear = require('dayjs/plugin/isoWeeksInYear')
 var isLeapYear = require('dayjs/plugin/isLeapYear')
@@ -47,11 +48,12 @@ const sort = (tab) => {
  * @description Récupère les statisques pour un utilisateur
  */
 router.get('/:userId', async (req, res) => {
+    console.log('satst')
     try {
+        console.log('satst')
         const statistiques = await Statistiques.find({
             _utilisateur: req.params.userId,
         })
-
         return res.status(200).json({
             data: statistiques,
             msg: 'Statstiques récupérées avec succès',
@@ -374,9 +376,7 @@ router.post('/:userId', async (req, res) => {
                 ].nombre_entrainement += 1
 
                 // Récup des stats des reccord d'entrainements
-                if (
-                    entrainement.tableau_statistiques.max_20_mins[0] != null
-                ) {
+                if (entrainement.tableau_statistiques.max_20_mins[0] != null) {
                     max_20_mins =
                         statistiques.reccord_20_minutes >=
                         entrainement.tableau_statistiques.max_20_mins[0]
