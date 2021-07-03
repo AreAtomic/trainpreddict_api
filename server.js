@@ -100,6 +100,7 @@ app.use(
     require('./routes/utilisateur')
 )
 app.use('/api/auth', cors(corsOptionsDelegate), require('./routes/auth'))
+app.use('/api/infosup', cors(corsOptionsDelegate), require('./routes/infosup'))
 app.use('/api/profil', cors(corsOptionsDelegate), require('./routes/profil'))
 app.use(
     '/api/objectif',

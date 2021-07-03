@@ -3,6 +3,7 @@
  */
 const express = require('express')
 const router = express.Router()
+const { jwtauth } = require('../middlewares/auth.middleware')
 /**
  * @import Models
  */
@@ -12,9 +13,8 @@ const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
  * @route api/donneesUtilisateur
  * @description Permet de créer un plan d'entrainement pour l'utilisateur
  */
-router.post('/:userId', async (req, res) => {
+router.post('/', [jwtauth], async (req, res) => {
     try {
-        console.log(req.body)
         const {
             sse,
             experience,
@@ -80,7 +80,7 @@ router.post('/:userId', async (req, res) => {
         }
 
         const donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
+            { _utilisateur: req.utilisateur._id },
             { $set: donnees },
             { new: true, upsert: true }
         )
@@ -98,7 +98,7 @@ router.post('/:userId', async (req, res) => {
  * @route get api/donneesUtilisateurs/:userId
  * @description permet de récupérer les données utilisateur
  */
-router.get('/:userId', async (req, res) => {
+router.get('/', [jwtauth], async (req, res) => {
     var donneesUtilisateurs = await DonneesUtilisateur.findOne({
         _utilisateur: req.params.userId,
     })
@@ -120,7 +120,7 @@ router.get('/:userId', async (req, res) => {
         }
 
         donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
+            { _utilisateur: req.utilisateur._id },
             { $set: donnees },
             { new: true, upsert: true }
         )

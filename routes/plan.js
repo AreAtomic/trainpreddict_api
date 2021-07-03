@@ -12,6 +12,8 @@ const Objectif = require('../models/Objectif')
 const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
 const Plan = require('../models/Plan')
 const Entrainement = require('../models/Entrainement')
+const { jwtauth } = require('../middlewares/auth.middleware')
+const Utilisateur = require('../models/Utilisateur')
 
 // Tri bulle
 function sort(tab) {
@@ -38,104 +40,114 @@ function sort(tab) {
  * @route POST api/plan
  * @description Permet de créer un plan d'entrainement pour l'utilisateur
  */
-router.post('/:userId', async (req, res) => {
-    // Données du plan
-    console.log("Plan")
-    const utilisateur = req.params.userId
-    const date_debut = dayjs(req.body.date_debut)
-    const date_fin = dayjs(req.body.date_fin)
-    // Données pour la création du plan
-    var objectif = await Objectif.find({ _utilisateur: utilisateur })
-    objectif = sort(objectif)
-    const donneesUtilisateur = await DonneesUtilisateur.findOne({
-        _utilisateur: utilisateur,
-    })
+router.post('/', [jwtauth], async (req, res) => {
+    try {
+        // Données du plan
+        const utilisateur = req.utilisateur._id
+        const date_debut = dayjs(req.body.date_debut)
+        const date_fin = dayjs(req.body.date_fin)
+        // Données pour la création du plan
+        var objectif = await Objectif.find({ _utilisateur: utilisateur })
 
-    console.log(objectif, objectif[0])
-
-    // Création du plan
-    const seances = await calculPlan(objectif[0], donneesUtilisateur, false)
-    console.log(seances[seances.length - 1])
-    
-    
-    let seances_definies = []
-    for (let i = 0; i < seances.length; i++) {
-        for (j = 0; j < seances[i].length; j++) {
-            seances_definies.push(seances[i][j])
+        if (objectif.length === 0) {
+            return res
+                .status(400)
+                .json({ error: "Veuillez d'abord créer un objectif" })
         }
-    }
+        objectif = sort(objectif)
+        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+            _utilisateur: utilisateur,
+        })
 
-    let plan = await Plan.findOneAndDelete({
-        _utilisateur: utilisateur,
-        date_debut: date_debut,
-        date_fin: date_fin,
-    })
+        // Création du plan
+        const seances = await calculPlan(objectif[0], donneesUtilisateur, false)
+        console.log(seances[seances.length - 1])
 
-    plan = new Plan({
-        _utilisateur: utilisateur,
-        _donnees_utilisateur: donneesUtilisateur,
-        date_debut: date_debut,
-        date_fin: date_fin,
-        SeancesDefinies: seances_definies,
-    })
-
-    plan.save()
-
-    console.log(plan)
-
-    // Pousse on mongodb
-    return res.status(200).json({ data: plan, msg: 'Nouveau plan créé' })
-})
-
-/**
- * @route POST api/plan
- * @description Permet de créer un plan d'entrainement pour l'utilisateur
- */
-router.post('/:userId/update', async (req, res) => {
-    // Données du plan
-    const utilisateur = req.params.userId
-    const date_debut = dayjs(req.body.date_debut)
-    const date_fin = dayjs(req.body.date_fin)
-    // Données pour la création du plan
-    const objectif = await Objectif.findOne({ _utilisateur: utilisateur })
-    const donneesUtilisateur = await DonneesUtilisateur.findOne({
-        _utilisateur: utilisateur,
-    })
-
-    // Création du plan
-    //calculPlan(objectif, donneesUtilisateur, HT);
-    const seances = await calculPlan(objectif, donneesUtilisateur, false)
-    let seances_definies = []
-    for (let i = 0; i < seances.length - 1; i++) {
-        for (j = 0; j < 7; j++) {
-            seances_definies.push(seances[i][j])
+        let seances_definies = []
+        for (let i = 0; i < seances.length; i++) {
+            for (j = 0; j < seances[i].length; j++) {
+                seances_definies.push(seances[i][j])
+            }
         }
-    }
 
-    let plan = await Plan.findOneAndUpdate(
-        { _utilisateur: utilisateur },
-        {
+        let plan = await Plan.findOneAndDelete({
+            _utilisateur: utilisateur,
+            date_debut: date_debut,
+            date_fin: date_fin,
+        })
+
+        plan = new Plan({
             _utilisateur: utilisateur,
             _donnees_utilisateur: donneesUtilisateur,
             date_debut: date_debut,
             date_fin: date_fin,
             SeancesDefinies: seances_definies,
-            Entrainements: [],
-        },
-        { upsert: true, new: true }
-    )
+        })
 
-    //Pousse on mongodb
-    return res.status(200).json({ plan })
+        plan.save()
+
+        // Pousse on mongodb
+        return res.status(200).json({ data: plan, msg: 'Nouveau plan créé' })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: err.message })
+    }
+})
+
+/**
+ * @route PUT api/plan/:planId
+ * @description Permet de modifier un plan d'entrainement pour l'utilisateur
+ */
+router.put('/:planId', [jwtauth], async (req, res) => {
+    try {
+        // Données du plan
+        const utilisateur = req.utilisaeur._id
+        const date_debut = dayjs(req.body.date_debut)
+        const date_fin = dayjs(req.body.date_fin)
+        // Données pour la création du plan
+        const objectif = await Objectif.findOne({ _utilisateur: utilisateur })
+        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+            _utilisateur: utilisateur,
+        })
+
+        // Création du plan
+        //calculPlan(objectif, donneesUtilisateur, HT);
+        const seances = await calculPlan(objectif, donneesUtilisateur, false)
+        let seances_definies = []
+        for (let i = 0; i < seances.length - 1; i++) {
+            for (j = 0; j < 7; j++) {
+                seances_definies.push(seances[i][j])
+            }
+        }
+
+        let plan = await Plan.findOneAndUpdate(
+            { _id: req.params.planId },
+            {
+                _utilisateur: utilisateur,
+                _donnees_utilisateur: donneesUtilisateur,
+                date_debut: date_debut,
+                date_fin: date_fin,
+                SeancesDefinies: seances_definies,
+                Entrainements: [],
+            },
+            { upsert: true, new: true }
+        )
+
+        //Pousse on mongodb
+        return res.status(200).json({ plan })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: err.message })
+    }
 })
 
 /**
  * @route GET api/plan
  * @description Permet de récupérer les plans d'entrainement pour l'utilisateur
  */
-router.get('/:userId', async (req, res) => {
+router.get('/', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
         const plan = await Plan.find({ _utilisateur: utilisateur })
         if (!plan) {
             return res
@@ -143,17 +155,24 @@ router.get('/:userId', async (req, res) => {
                 .json({ error: 'Pas de plan créé pour cet utilisateur' })
         }
         return res.status(200).json({ data: plan })
-    } catch (e) {
-        return res.status(200).json({ error: e })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: err.message })
     }
 })
 
 /**
- * @route POST api/plan/:planId/delete/
+ * @route DELETE api/plan/:planId/
  * @description Suprimme un plan son id
  */
-router.post('/:planId/delete', async (req, res) => {
+router.post('/:planId', [jwtauth], async (req, res) => {
     try {
+        const utilisateur = await Utilisateur.findOne({_id: req.utilisateur._id})
+        if(!utilisateur){
+            return res.status(400).json({
+                error: "L'utilisateur n'a pas été trouvé",
+            })
+        }
         const plan = await Plan.findOneAndDelete({ _id: req.params.planId })
 
         return res.status(200).json({ msg: 'Plan supprimé avec succès' })
@@ -166,16 +185,16 @@ router.post('/:planId/delete', async (req, res) => {
 })
 
 /**
- * @route POST api/plan/seance
+ * @route POST api/plan/:planId/seance
  * @description Insère une nouvelle séance dans le plan
  */
-router.post('/:userId/seance', async (req, res) => {
+router.post('/:planId/seance', [jwtauth],async (req, res) => {
     // Récup des données
-    const utilisateur = req.params.userId
+    const utilisateur = req.utilisateur._id
     const newSeance = [req.body.seance, dayjs(req.body.date).toISOString()]
 
     const entrainements = await Entrainement.find({ _utilisateur: utilisateur })
-    let plan = await Plan.findOne({ _utilisateur: utilisateur })
+    let plan = await Plan.findOne({ _id: req.params.planId })
     if (!plan) {
         return res
             .status(400)

@@ -59,10 +59,7 @@ router.post('/createuser', async function (req, res) {
     const {
         nom_user,
         prenom_user,
-        adresse_user,
-        naissance_user,
         email_user,
-        licence_user,
     } = req.body
     try {
         const user = await Utilisateur.create({

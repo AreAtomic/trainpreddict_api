@@ -4,7 +4,6 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
-const axios = require('axios')
 const { jwtauth } = require('../middlewares/auth.middleware')
 /**
  * @import Models
@@ -12,7 +11,7 @@ const { jwtauth } = require('../middlewares/auth.middleware')
 const Utilisateur = require('../models/Utilisateur')
 
 /**
- * @route get api/utilisateur/:id
+ * @route get api/utilisateur
  * @description Récupération du token en cours
  * */
 router.get('/', [jwtauth], async (req, res) => {
@@ -31,10 +30,29 @@ router.get('/', [jwtauth], async (req, res) => {
 })
 
 /**
- *  @route POST api/utilisateur/:userId/password
+ * @route delete api/utilisateur
+ * @description Supression du compte
+ * */
+router.delete('/', [jwtauth], async (req, res) => {
+    try {
+        const utilisateur = await Utilisateur.findOneAndDelete({
+            _id: req.utilisateur._id,
+        })
+
+        return res.status(200).json({
+            msg: `Compte de : ${utilisateur.nom} ${utilisateur.prenom} supprimé`,
+        })
+    } catch (err) {
+        console.error(err.message)
+        return res.status(500).send('Server erreur')
+    }
+})
+
+/**
+ *  @route PUT api/utilisateur/:userId
  *  @description Changement de mot de passe quand l'utilisateur est connecté
  * */
-router.post('/password', [jwtauth], async (req, res) => {
+router.put('/', [jwtauth], async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
         const last = req.body.last
@@ -57,25 +75,38 @@ router.post('/password', [jwtauth], async (req, res) => {
         }
 
         const utilisateur = await Utilisateur.findOneAndUpdate(
-            { _id: req.params.userId },
+            { _id: req.utilisateur._id },
             { $set: { mot_de_passe: password } },
             { new: true, upsert: true }
         )
 
         return res
             .status(200)
-            .send({ data: utilisateur, msg: 'Mot de passe mis à jour' })
-    } catch (e) {
-        console.log(e)
-        return res.status(200).json({ error: 'Serveur erreur', log: e })
+            .send({
+                data: {
+                    _id: utilisateur._id,
+                    nom: utilisateur.nom,
+                    prenom: utilisateur.prenom,
+                    email: utilisateur.email,
+                },
+                msg: 'Mot de passe mis à jour',
+            })
+    } catch (err) {
+        console.log(err)
+        if (err.indexOf('Illegal arguments')) {
+            return res
+                .status(400)
+                .json({ error: "L'ancien mot de passe est requis" })
+        }
+        return res.status(400).json({ error: err.message })
     }
 })
 
 /**
- * @route POST api/utilisateur/:userId/password/lost
+ * @route POST api/utilisateur/link
  * @description Envoie d'un mail pour récupération du mot de passe
  *  */
-router.post('/password/lost', async (req, res) => {
+router.post('/link', async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
 
@@ -99,29 +130,6 @@ router.post('/password/lost', async (req, res) => {
     } catch (e) {
         console.log(e)
         return res.status(200).json({ error: 'Serveur erreur', log: e })
-    }
-})
-
-/**
- * @route /api/utilisateurs/update/all/courbes
- * @description Mide à jour des courbes des utilisateurs
- */
-router.post('/update/all/courbes', async (req, res) => {
-    try {
-        const utilisateurs = await Utilisateur.find({})
-
-        for (let i = 0; i < utilisateurs.length; i++) {
-            axios.post(
-                `http://localhost:5000/api/courbes/${utilisateurs[i]._id}/update/realise`
-            )
-        }
-
-        return res
-            .status(200)
-            .json({ msg: 'Courbes des utilisateurs misent à jour' })
-    } catch (e) {
-        console.log(e)
-        return res.status(200).json({ error: e })
     }
 })
 

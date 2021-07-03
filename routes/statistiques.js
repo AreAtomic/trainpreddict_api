@@ -74,8 +74,6 @@ router.post('/:userId/initialisation', async (req, res) => {
             _id: req.params.userId,
         })
 
-        console.log(utilisateur)
-
         const month = {
             janvier: {
                 kilometres: 0,
