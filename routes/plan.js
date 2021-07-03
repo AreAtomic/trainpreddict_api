@@ -76,6 +76,10 @@ router.post('/', [jwtauth], async (req, res) => {
             date_fin: date_fin,
         })
 
+        if(plan){
+            return res.status(400).json({error: "Un plan existe déjà pour ces dates"})
+        }
+
         plan = new Plan({
             _utilisateur: utilisateur,
             _donnees_utilisateur: donneesUtilisateur,

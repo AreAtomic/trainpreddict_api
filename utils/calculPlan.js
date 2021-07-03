@@ -10,13 +10,14 @@ const fecthAllSeances = async () => {
     let seance_vo2max = await Seances.find({ type: { $in: 'VO2 Max' } })
     let seance_rythme = await Seances.find({ type: { $in: 'Rythme' } })
     let seance_recup = await Seances.find({ type: { $in: 'Recuperation' } })
+    
     return {
-        Foncier: seance_foncier.data.data.seances,
-        Seuil: seance_seuil.data.data.seances,
-        PMA: seance_pma.data.data.seances,
-        VO2_Max: seance_vo2max.data.data.seances,
-        Rythme: seance_rythme.data.data.seances,
-        Recup: seance_recup.data.data.seances,
+        Foncier: seance_foncier,
+        Seuil: seance_seuil,
+        PMA: seance_pma,
+        VO2_Max: seance_vo2max,
+        Rythme: seance_rythme,
+        Recup: seance_recup,
     }
 }
 
