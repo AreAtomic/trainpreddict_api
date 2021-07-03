@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
         "pretty": "prettier --write \"./**/*.{js,jsx,json}\"",
-        "server": "nodemon server"
+        "server": "nodemon server",
+        "test": "node server.test.js"
     },
     "author": "Aurelien SEBE",
     "license": "ISC",

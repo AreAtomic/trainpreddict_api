@@ -24,4 +24,4 @@ cache:
 test_async:
   script:
     - npm install
-    - node server.js
+    - node server.test.js

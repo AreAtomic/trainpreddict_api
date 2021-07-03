@@ -5,6 +5,7 @@ const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
 const calculPlan = require('../utils/calculPlan')
+const { jwtauth } = require('../middlewares/auth.middleware')
 /**
  * @import Models
  */
@@ -12,7 +13,6 @@ const Objectif = require('../models/Objectif')
 const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
 const Plan = require('../models/Plan')
 const Entrainement = require('../models/Entrainement')
-const { jwtauth } = require('../middlewares/auth.middleware')
 const Utilisateur = require('../models/Utilisateur')
 
 // Tri bulle
@@ -76,6 +76,10 @@ router.post('/', [jwtauth], async (req, res) => {
             date_fin: date_fin,
         })
 
+        if(plan){
+            return res.status(400).json({error: "Un plan existe déjà pour ces dates"})
+        }
+
         plan = new Plan({
             _utilisateur: utilisateur,
             _donnees_utilisateur: donneesUtilisateur,
@@ -101,7 +105,7 @@ router.post('/', [jwtauth], async (req, res) => {
 router.put('/:planId', [jwtauth], async (req, res) => {
     try {
         // Données du plan
-        const utilisateur = req.utilisaeur._id
+        const utilisateur = req.utilisateur._id
         const date_debut = dayjs(req.body.date_debut)
         const date_fin = dayjs(req.body.date_fin)
         // Données pour la création du plan
@@ -111,7 +115,6 @@ router.put('/:planId', [jwtauth], async (req, res) => {
         })
 
         // Création du plan
-        //calculPlan(objectif, donneesUtilisateur, HT);
         const seances = await calculPlan(objectif, donneesUtilisateur, false)
         let seances_definies = []
         for (let i = 0; i < seances.length - 1; i++) {
@@ -165,30 +168,24 @@ router.get('/', [jwtauth], async (req, res) => {
  * @route DELETE api/plan/:planId/
  * @description Suprimme un plan son id
  */
-router.post('/:planId', [jwtauth], async (req, res) => {
+router.delete('/:planId', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = await Utilisateur.findOne({_id: req.utilisateur._id})
-        if(!utilisateur){
-            return res.status(400).json({
-                error: "L'utilisateur n'a pas été trouvé",
-            })
-        }
         const plan = await Plan.findOneAndDelete({ _id: req.params.planId })
 
-        return res.status(200).json({ msg: 'Plan supprimé avec succès' })
-    } catch (e) {
-        console.log(e)
+        return res.status(200).json({ msg: `Plan ${plan.id} supprimé avec succès` })
+    } catch (err) {
+        console.log(err)
         return res.status(200).json({
-            error: 'Un problème est survenu lors de la supression',
+            error: err.message,
         })
     }
 })
 
 /**
- * @route POST api/plan/:planId/seance
+ * @route put api/plan/:planId/seance
  * @description Insère une nouvelle séance dans le plan
  */
-router.post('/:planId/seance', [jwtauth],async (req, res) => {
+router.put('/:planId/seance', [jwtauth],async (req, res) => {
     // Récup des données
     const utilisateur = req.utilisateur._id
     const newSeance = [req.body.seance, dayjs(req.body.date).toISOString()]
