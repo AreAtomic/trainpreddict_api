@@ -134,7 +134,8 @@ app.use('/api/admin', cors(corsOptionsDelegate), require('./routes/admin'))
 
 if (process.env.NODE_ENV == 'development') {
     const PORT = process.env.PORT || 5000
-    app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
+    app.listen(PORT, () => {
+        console.log(`Server running on PORT ${PORT}`)
+        process.exit(0)
+    })
 }
-
-process.exit(0)
