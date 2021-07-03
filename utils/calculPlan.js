@@ -1,85 +1,25 @@
 const dayjs = require('dayjs')
-const axios = require('axios')
-const e = require('express')
-const { header } = require('express-validator')
-const Seances= require("../models/Seance")    
+const Seances = require('../models/Seance')
 let seances
+
 // Classification de toutes les séances par types
-
-
 const fecthAllSeances = async () => {
-    let seance_foncier=Seances.find(type="Foncier")
-    let seance_seuil=Seances.find(type="Seuil")
-    let seance_pma=Seances.find(type="PMA")
-    let seance_vo2max=Seances.find(type="VO2 Max")
-    let seance_rythme=Seances.find(type="Rythme")
-    let seance_recup=Seances.find(type="Recuperation")
+    let seance_foncier = await Seances.find({ type: { $in: 'Foncier' } })
+    let seance_seuil = await Seances.find({ type: { $in: 'Seuil' } })
+    let seance_pma = await Seances.find({ type: { $in: 'PMA' } })
+    let seance_vo2max = await Seances.find({ type: { $in: 'VO2 Max' } })
+    let seance_rythme = await Seances.find({ type: { $in: 'Rythme' } })
+    let seance_recup = await Seances.find({ type: { $in: 'Recuperation' } })
     return {
         Foncier: seance_foncier.data.data.seances,
         Seuil: seance_seuil.data.data.seances,
         PMA: seance_pma.data.data.seances,
         VO2_Max: seance_vo2max.data.data.seances,
         Rythme: seance_rythme.data.data.seances,
-        Recup: seance_recup.data.data.seances
+        Recup: seance_recup.data.data.seances,
     }
 }
 
-
-/*
-const fecthAllSeances = async () => {
-    var foncier = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['Foncier'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-    var seuil = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['Seuil'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-    var pma = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['PMA'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-    var vo2max = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['VO2 Max'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-    var rythme = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['Rythme'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-    var recup = await axios.post(
-        `${API_URL}/seance/type/`,
-        {
-            type: ['Recuperation'],
-        },
-        { headers: { 'Content-Type': 'application/json' } }
-    )
-
-    return {
-        Foncier: foncier.data.data.seances,
-        Seuil: seuil.data.data.seances,
-        PMA: pma.data.data.seances,
-        VO2_Max: vo2max.data.data.seances,
-        Rythme: rythme.data.data.seances,
-        Recup: recup.data.data.seances,
-    }
-}
-*/
 // Définitions des coefficents de sse pour chaque jour de la semaine
 const jourEntrainement = (nombre_seance_semaine) => {
     if (nombre_seance_semaine > 1) {
@@ -127,31 +67,31 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
     ]
 
     seances = await fetching()
-    if(seances!=null){
-    let seances_type = seances
-    /*
-    Definition semaine
-  */
-    const debut = dayjs(date_debut)
-    const fin = dayjs(date_objectif)
-    var jours = fin.diff(debut, 'day')
-    var seances = []
+    if (seances != null) {
+        let seances_type = seances
+        /* Definition semaine */
+        const debut = dayjs(date_debut)
+        const fin = dayjs(date_objectif)
+        var jours = fin.diff(debut, 'day')
+        var seances = []
 
-    for (let i = 0; i < jours; i += 7) {
-        let debut_semaine = debut.add(i / 7, 'week')
-        let sem = await defSemaine(
-            i / 7,
-            debut_semaine,
-            date_objectif,
-            donneesUtilisateur,
-            seances_type,
-            ht
-        )
-        seances.push(sem)
-        console.log(sem)
-    }}
-    else{
-        seances=res.status(200).json({  msg: "il n'y a aucune seance a retourner" })
+        for (let i = 0; i < jours; i += 7) {
+            let debut_semaine = debut.add(i / 7, 'week')
+            let sem = await defSemaine(
+                i / 7,
+                debut_semaine,
+                date_objectif,
+                donneesUtilisateur,
+                seances_type,
+                ht
+            )
+            seances.push(sem)
+            console.log(sem)
+        }
+    } else {
+        seances = res
+            .status(200)
+            .json({ msg: "il n'y a aucune seance a retourner" })
     }
     return seances
 }
