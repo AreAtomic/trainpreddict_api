@@ -23,9 +23,8 @@ const { jwtauth } = require('../middlewares/auth.middleware')
  */
 router.post('/login', async (req, res) => {
     const { email, mot_de_passe } = req.body
-
     try {
-        let utilisateur = await Utilisateur.findOne({ email })
+        let utilisateur = await Utilisateur.findOne({ email: email })
         if (!utilisateur) {
             return res.status(400).json({ error: "L'email est invalide" })
         }
@@ -45,11 +44,20 @@ router.post('/login', async (req, res) => {
             { expiresIn: '10d' }
         )
 
+        /* Check first log */
+        const info = await InfoSup.findOne({ _utilisateur: utilisateur.id })
+        const profil = await Profil.findOne({ _utilisateur: utilisateur.id })
+
+        console.log(info, profil)
+
         return res.status(200).json({
-            id: utilisateur.id,
-            nom: utilisateur.nom,
-            prenom: utilisateur.prenom,
-            token: utilisateur.token,
+            data: {
+                nom: utilisateur.nom,
+                prenom: utilisateur.prenom,
+                token: utilisateur.token,
+                firstLogged: info == null && profil == null,
+            },
+            msg: `Connexion réussie, bonjour ${utilisateur.prenom}`,
         })
     } catch (err) {
         console.log(err)
@@ -73,7 +81,7 @@ router.post('/signup', async (req, res) => {
 
     if (mot_de_passe != mot_de_passe2) {
         return res
-            .status(200)
+            .status(400)
             .json({ error: 'Les mots de passe ne sont pas les mêmes' })
     }
 
@@ -83,7 +91,7 @@ router.post('/signup', async (req, res) => {
             if (utilisateur.email == email) {
                 // Cas ou ce n'est pas le même utilisateur mais qu'il a mis la même adresse mail
                 return res
-                    .status(200)
+                    .status(400)
                     .json({ error: "L'adresse email est déjà utilisée" })
             }
         }
@@ -109,16 +117,16 @@ router.post('/signup', async (req, res) => {
 
         return res.status(200).json({
             data: {
-                id: utilisateur.id,
                 nom: utilisateur.nom,
                 prenom: utilisateur.prenom,
                 token: utilisateur.token,
+                firstLogged: true,
             },
             msg: 'Utilisateur créé avec succés',
         })
     } catch (err) {
         console.log(err)
-        return res.status(200).json({ error: err.message })
+        return res.status(400).json({ error: err.message })
     }
 })
 
