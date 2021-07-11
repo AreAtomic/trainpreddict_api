@@ -71,13 +71,13 @@ router.post('/', [jwtauth], async (req, res) => {
             temps_recup_max: temps_recup_max,
             nombre_heure_semaine: nombre_heure_semaine,
             nombre_seance_semaine: nombre_seance_semaine,
+            foncier: foncier,
+            jours_repos: jours_repos,
             musculation: musculation,
             ppg: ppg,
             etirement: etirement,
-            foncier: foncier,
             style: style,
             point_faible: point_faible,
-            jours_repos: jours_repos,
         })
 
         donneesUtilisateur.save()

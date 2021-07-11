@@ -11,54 +11,64 @@ const dayjs = require('dayjs')
 const Profil = require('../models/Profil')
 const Utilisateur = require('../models/Utilisateur')
 const InfoSup = require('../models/InfoSup')
+const { jwtauth } = require('../middlewares/auth.middleware')
 
 /**
- * @route post /api/profil
+ * @route POST /api/profil
  * @description création du profil
  * */
-router.post('/:userId', async (req, res) => {
-    const errors = validationResult(req)
-
-    if (!errors.isEmpty()) {
-        return res.status(200).json({ error: "Le formulaire n'est pas valide" })
-    }
-
-    const { fcfs, pfs, poids } = req.body
-    console.log(req.body)
-    let age = 14
-    if (req.body.age) {
-        age = req.body.age
-    } else {
-        const infoSup = await InfoSup.findOne({ _utilisateur: req.params.userId })
-        age = Math.abs(dayjs(infoSup.naissance).diff(dayjs(), 'year'))
-    }
-
-    const profilInfo = {
-        fcfs,
-        pfs,
-        age,
-        poids,
-    }
+router.post('/', [jwtauth], async (req, res) => {
     try {
-        // Using upsert option (creates new doc if no match is found):
+        const { fcfs, pfs, poids } = req.body
+
+        let age = 14
+        if (req.body.age) {
+            age = req.body.age
+        } else {
+            const infoSup = await InfoSup.findOne({
+                _utilisateur: req.utilisateur._id,
+            })
+            age = Math.abs(dayjs(infoSup.naissance).diff(dayjs(), 'year'))
+        }
+
+        const profilInfo = {
+            fcfs,
+            pfs,
+            age,
+            poids,
+        }
+
         let profil = await Profil.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
+            { _utilisateur: req.utilisateur._id },
             { $set: profilInfo },
             { new: true, upsert: true }
         )
         return res.status(200).json({ data: profil, msg: 'Profil modifié' })
     } catch (err) {
-        return res.status(200).json({ error: "Le formulaire n'est pas valide" })
+        return res.status(400).json({ error: err.message })
     }
 })
 
 /**
- * @route post /api/profil/:id
+ * @route GET /api/profil/:id
  * @description Permet la récupération du profil de l'utilisateur
  */
-router.get('/:userId', async (req, res) => {
-    const profil = await Profil.findOne({ _utilisateur: req.params.userId })
-    return res.status(200).json({ data: profil, msg: 'Profil récupéré' })
+router.get('/', [jwtauth], async (req, res) => {
+    try {
+        const infoSup = await InfoSup.findOne({
+            _utilisateur: req.utilisateur._id,
+        })
+        const age = Math.abs(dayjs(infoSup.naissance).diff(dayjs(), 'year'))
+        console.log(infoSup.naissance)
+        const profil = await Profil.findOneAndUpdate(
+            { _utilisateur: req.utilisateur._id },
+            { $set: { age: age } },
+            { new: true, upsert: true }
+        )
+        return res.status(200).json({ data: profil, msg: 'Profil récupéré' })
+    } catch (err) {
+        return res.status(400).json({ error: err.message })
+    }
 })
 
 /**
@@ -80,15 +90,11 @@ router.get('/modfication/utilisateur', async (req, res) => {
 
                 profil.save()
             }
-
-            console.log(profil)
         }
 
         return res.status(200).json({ msg: 'Profils utilisateurs corrigés' })
-    } catch (e) {
-        return res
-            .status(200)
-            .json({ error: 'Une erreur serveur est survenue' })
+    } catch (err) {
+        return res.status(500).json({ error: err.message })
     }
 })
 
