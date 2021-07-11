@@ -68,7 +68,7 @@ const DonneesUtilisateurSchema = new Schema({
     },
     foncier: {
         type: String,
-        enum: ['Force', 'Vélocité', 'Fixe'],
+        enum: ['Force', 'Vélocité', 'Pignon fixe'],
         required: true,
     },
     style: {

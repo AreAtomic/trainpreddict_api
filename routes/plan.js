@@ -41,13 +41,13 @@ function sort(tab) {
  * @description Permet de créer un plan d'entrainement pour l'utilisateur
  */
 router.post('/', [jwtauth], async (req, res) => {
+    console.log("plan")
     try {
+        console.log("plan 2")
         // Données du plan
         const utilisateur = req.utilisateur._id
-        const date_debut = dayjs(req.body.date_debut)
-        const date_fin = dayjs(req.body.date_fin)
         // Données pour la création du plan
-        var objectif = await Objectif.find({ _utilisateur: utilisateur })
+        let objectif = await Objectif.find({ _utilisateur: utilisateur })
 
         if (objectif.length === 0) {
             return res
@@ -61,7 +61,6 @@ router.post('/', [jwtauth], async (req, res) => {
 
         // Création du plan
         const seances = await calculPlan(objectif[0], donneesUtilisateur, false)
-        console.log(seances[seances.length - 1])
 
         let seances_definies = []
         for (let i = 0; i < seances.length; i++) {
@@ -72,8 +71,8 @@ router.post('/', [jwtauth], async (req, res) => {
 
         let plan = await Plan.findOneAndDelete({
             _utilisateur: utilisateur,
-            date_debut: date_debut,
-            date_fin: date_fin,
+            date_debut: objectif[0].date_debut,
+            date_fin: objectif[0].date_objectif,
         })
 
         if(plan){
@@ -83,8 +82,8 @@ router.post('/', [jwtauth], async (req, res) => {
         plan = new Plan({
             _utilisateur: utilisateur,
             _donnees_utilisateur: donneesUtilisateur,
-            date_debut: date_debut,
-            date_fin: date_fin,
+            date_debut: objectif[0].date_debut,
+            date_fin: objectif[0].date_objectif,
             SeancesDefinies: seances_definies,
         })
 

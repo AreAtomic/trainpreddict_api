@@ -274,6 +274,29 @@ router.put('/', [jwtauth], async (req, res) => {
 })
 
 /**
+ * @route GET api/auth/infosup
+ * @description Permet de rajouter des infos suite à l'inscription
+ */
+router.get('/', [jwtauth], async (req, res) => {
+    try {
+        // Information supplémentaire sur l'utilisateur
+        const infosup = await InfoSup.findOneAndUpdate({
+            _utilisateur: req.utilisateur._id,
+        })
+
+        return res.status(200).json({
+            msg: 'Données récupérées',
+            data: {
+                infosup,
+            },
+        })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ error: err.message })
+    }
+})
+
+/**
  * @route DELETE api/auth/infosup
  * @description Permet de rajouter des infos suite à l'inscription
  */

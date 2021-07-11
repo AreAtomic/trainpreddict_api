@@ -12,7 +12,7 @@ const { jwtauth } = require('../middlewares/auth.middleware')
 const Objectif = require('../models/Objectif')
 
 /**
- * @route post api/objectif
+ * @route POST api/objectif
  * @description Permet de créer un objectif pour l'utilisateur
  */
 router.post(
@@ -89,7 +89,7 @@ router.post(
 
             return res
                 .status(200)
-                .json({ data: objectif, msg: 'Objectif créé' })
+                .json({ data: [objectif], msg: 'Objectif créé' })
         } catch (err) {
             return res.status(400).json({ error: err.message })
         }
@@ -116,7 +116,6 @@ router.put(
     async (req, res) => {
         try {
             const utilisateur = req.utilisateur._id
-
             const {
                 date_objectif,
                 date_debut,
@@ -156,7 +155,7 @@ router.put(
             )
             return res
                 .status(200)
-                .json({ data: objectif, msg: 'Objectif mis à jour' })
+                .json({ data: [objectif], msg: 'Objectif mis à jour' })
         } catch (err) {
             res.status(500).json({ error: err.message })
         }
@@ -164,7 +163,7 @@ router.put(
 )
 
 /**
- * @route get api/objectif
+ * @route GET api/objectif
  * @description permet de récupérer les objectifs
  */
 router.get('/', [jwtauth], async (req, res) => {
@@ -175,14 +174,16 @@ router.get('/', [jwtauth], async (req, res) => {
             objectif = sort(objectif)
         }
 
-        return res.status(200).json({ data: objectif })
+        return res
+            .status(200)
+            .json({ data: objectif, msg: 'Objectif récupérés' })
     } catch (e) {
         return res.status(200).send({ data: null })
     }
 })
 
 /**
- * @route post api/:objectif/
+ * @route DELETE api/:objectif/
  * @description Supprimer l'objectif
  */
 router.delete('/:objectifId', [jwtauth], async (req, res) => {
