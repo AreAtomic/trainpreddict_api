@@ -49,7 +49,7 @@ router.delete('/', [jwtauth], async (req, res) => {
 })
 
 /**
- *  @route PUT api/utilisateur/:userId
+ *  @route PUT api/utilisateur/
  *  @description Changement de mot de passe quand l'utilisateur est connecté
  * */
 router.put('/', [jwtauth], async (req, res) => {
@@ -59,7 +59,7 @@ router.put('/', [jwtauth], async (req, res) => {
 
         if (req.body.password != req.body.password2) {
             return res
-                .status(200)
+                .status(400)
                 .json({ error: 'Les deux mot de passe ne sont pas identiques' })
         }
 
@@ -70,7 +70,7 @@ router.put('/', [jwtauth], async (req, res) => {
 
         if (!isMatch) {
             return res
-                .status(200)
+                .status(400)
                 .send({ error: "L'ancien mot de passe de correspond pas" })
         }
 
@@ -92,7 +92,6 @@ router.put('/', [jwtauth], async (req, res) => {
                 msg: 'Mot de passe mis à jour',
             })
     } catch (err) {
-        console.log(err)
         if (err.indexOf('Illegal arguments')) {
             return res
                 .status(400)

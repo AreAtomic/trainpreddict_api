@@ -207,6 +207,7 @@ router.put('/:objectifId', [jwtauth], async (req, res) => {
         const id = req.params.objectifId
         const {
             date_objectif,
+            date_debut,
             resultat_vise,
             titre,
             description,
@@ -230,17 +231,23 @@ router.put('/:objectifId', [jwtauth], async (req, res) => {
             distance: distance,
             denivele: denivele,
             temps: temps,
+            date_debut,
+            date_objectif,
             realise: realise,
         }
-        var objectif = await Objectif.findOneAndUpdate(
+        await Objectif.findOneAndUpdate(
             { _id: id },
             { $set: objectifInfo },
             { new: true, upsert: true }
         )
 
+        const objectifs = await Objectif.find({
+            _utilisateur: req.utilisateur._id,
+        })
+
         return res
             .status(200)
-            .json({ data: objectif, msg: 'Objectif mis à jour' })
+            .json({ data: objectifs, msg: 'Objectif mis à jour' })
     } catch (e) {
         console.log(e)
         return res
