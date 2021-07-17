@@ -6,6 +6,7 @@ const router = express.Router()
 const dayjs = require('dayjs')
 const FitParser = require('fit-file-parser').default
 const axios = require('axios')
+const { jwtauth } = require('../middlewares/auth.middleware')
 
 /**
  * @import Models
@@ -27,7 +28,7 @@ let fitParser = new FitParser({
  * @route POST api/entrainement/:id/resentis
  * Permet d'insérer un resentis dans un entrainement
  */
-router.post('/:entrainementId/ressentis', async (req, res) => {
+router.post('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
     const entrainementId = req.params.entrainementId
     let seance = await Entrainement.findOneAndUpdate(
         { _id: entrainementId },
@@ -41,7 +42,7 @@ router.post('/:entrainementId/ressentis', async (req, res) => {
  * @route POST api/entrainement/:id/typeEntrainement
  * Permet d'insérer un type de séance dans un entrainement
  */
-router.post('/:entrainementId/typeEntrainement', async (req, res) => {
+router.post('/:entrainementId/typeEntrainement', [jwtauth], async (req, res) => {
     const entrainementId = req.params.entrainementId
     let seance = await Entrainement.findOneAndUpdate(
         { _id: entrainementId },
@@ -55,15 +56,15 @@ router.post('/:entrainementId/typeEntrainement', async (req, res) => {
  * @route POST api/entrainement/file
  * Permet de créer un entrainement depuis un fichie
  */
-router.post('/:userId/file', async (req, res) => {
+router.post('/file', [jwtauth], async (req, res) => {
     // Récupération du profil
-    const user = req.params.userId
+    const user = req.utilisateur._id
     const profil = await Profil.findOne({ _utilisateur: user })
-
+    console.log('ENTRAINEMENT')
     // Vérification
     if (!req.files || Object.keys(req.files).length === 0) {
         return res
-            .status(200)
+            .status(400)
             .json({ error: 'Le fichier doit être de type .fit' })
     }
     let sampleFile = req.files.file
@@ -76,7 +77,7 @@ router.post('/:userId/file', async (req, res) => {
     try {
         fitParser.parse(content, async function (error, data) {
             if (error) {
-                return res.status(200).json({ error: error })
+                return res.status(202).json({ error: error })
             }
             const data_activity = data.activity.sessions[0]
             // Récupère toutes les infos du fichier
@@ -106,7 +107,7 @@ router.post('/:userId/file', async (req, res) => {
             })
 
             if (entrainement.length != 0) {
-                return res.status(200).json({
+                return res.status(202).json({
                     error: `Duplication de l'entrainement ${entrainement[0]._id}`,
                 })
             }
@@ -116,7 +117,7 @@ router.post('/:userId/file', async (req, res) => {
                 (power_moy == 0 || power_moy == undefined) &&
                 (fc_moy == 0 || fc_moy == undefined)
             ) {
-                return res.status(200).json({
+                return res.status(202).json({
                     error:
                         "Impossible d'analyser cette séance pas de watt ni de fréquence cardiaque, un des deux est requis",
                 })
@@ -273,6 +274,7 @@ router.post('/:userId/file', async (req, res) => {
                 n30_power = []
                 for (let i = 0; i < detailed_seconds.length; i += 30) {
                     let sum_power = 0
+                    let true_power = 0
                     for (
                         let j = i;
                         j < i + 29 && j < detailed_seconds.length - 1;
@@ -1018,6 +1020,9 @@ router.post('/:userId/file', async (req, res) => {
         })
     } catch (e) {
         console.log(e)
+        return res.status(202).json({
+            error: e.message,
+        })
     }
 })
 
@@ -1025,8 +1030,8 @@ router.post('/:userId/file', async (req, res) => {
  * @route GET api/entrainement
  * @description Permet de récupérer une séances avec son id
  */
-router.get('/:userId', async (req, res) => {
-    let seance = await Entrainement.find({ _utilisateur: req.params.userId })
+router.get('/', [jwtauth], async (req, res) => {
+    let seance = await Entrainement.find({ _utilisateur: req.utilisateur._id })
     return res.status(200).json({ data: seance.reverse() })
 })
 
@@ -1034,7 +1039,8 @@ router.get('/:userId', async (req, res) => {
  * @route GET api/entrainement
  * @description Permet de récupérer une séances avec son id
  */
-router.get('/:userId/analyse/:entrainementId', async (req, res) => {
+router.get('/analyse/:entrainementId', [jwtauth], async (req, res) => {
+    console.log(req.headers)
     axios
         .get(
             `http://localhost:5000/api/entrainement/${req.params.entrainementId}/performance`
@@ -1054,9 +1060,9 @@ router.get('/:userId/analyse/:entrainementId', async (req, res) => {
  * @route POST api/entrainement
  * @description Permet de récupérer une séances avec son id
  */
-router.post('/:userId/delete/:entrainementId', async (req, res) => {
+router.post('/delete/:entrainementId', [jwtauth], async (req, res) => {
     const seance = await Entrainement.findOneAndDelete({
-        _utilisateur: req.params.userId,
+        _utilisateur: req.utilisateur._id,
         _id: req.params.entrainementId,
     })
 
