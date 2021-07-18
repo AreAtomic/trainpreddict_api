@@ -22,7 +22,7 @@ dotenv.config()
 /*
  * Setting express *
  */
-var whitelist = [
+let whitelist = [
     'http://localhost:5000',
     'https://localhost:5000',
     'http://localhost:3000',
@@ -37,8 +37,8 @@ var whitelist = [
     'https://trainpreddict.fr:6001',
 ]
 
-var corsOptionsDelegate = function (req, callback) {
-    var corsOptions
+let corsOptionsDelegate = function (req, callback) {
+    let corsOptions
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
     } else {

@@ -6,6 +6,8 @@ const router = express.Router()
 const dayjs = require('dayjs')
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)
+const { jwtauth } = require('../middlewares/auth.middleware')
+
 /**
  * @import Models
  */
@@ -15,15 +17,15 @@ const Entrainement = require('../models/Entrainement')
 const Plan = require('../models/Plan')
 
 /**
- * @route GET /api/courbes/:userId/
+ * @route GET /api/courbes/
  * @description Récupérations des courbes
  */
-router.get('/:userId', async (req, res) => {
+router.get('/', [jwtauth], async (req, res) => {
     const courbesPrev = await CourbePrev.findOne({
-        _utilisateur: req.params.userId,
+        _utilisateur: req.utilisateur._id,
     })
     const courbesRea = await CourbeRea.findOne({
-        _utilisateur: req.params.userId,
+        _utilisateur: req.utilisateur._id,
     })
 
     return res
@@ -32,12 +34,12 @@ router.get('/:userId', async (req, res) => {
 })
 
 /**
- * @route POST /api/courbes/:userId/create/previsionnelle
+ * @route POST /api/courbes/previsionnelle
  * @description Création des courbes
  */
-router.post('/:userId/create/previsionnelle', async (req, res) => {
+router.post('/previsionnelle', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
         const plans = await Plan.find({ _utilisateur: utilisateur })
         let forme = []
         let fatigue = []
@@ -128,12 +130,12 @@ router.post('/:userId/create/previsionnelle', async (req, res) => {
 })
 
 /**
- * @route POST /api/courbes/:userId/create/realise
+ * @route POST /api/courbes/realise
  * @description Création des courbes
  */
-router.post('/:userId/create/realise', async (req, res) => {
+router.post('/realise', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
         let forme = []
         let fatigue = []
         let labels = []
@@ -176,12 +178,12 @@ router.post('/:userId/create/realise', async (req, res) => {
 })
 
 /**
- * @route POST /api/courbes/:userId/realise
+ * @route PUT /api/courbes/realise
  * @description Modification des courbes réalisés
  */
-router.post('/:userId/update/realise', async (req, res) => {
+router.put('/realise', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
 
         // Récup des courbes stocké
         let courbesRea = await CourbeRea.findOne({
@@ -266,12 +268,12 @@ router.post('/:userId/update/realise', async (req, res) => {
 })
 
 /**
- * @route POST /api/courbes/:userId/previsionnelle
+ * @route PUT /api/courbes/previsionnelle
  * @description Modifications des courbes prévisionnelles
  */
-router.post('/:userId/update/previsionnelle', async (req, res) => {
+router.put('/previsionnelle', [jwtauth], async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
         const plans = await Plan.find({ _utilisateur: utilisateur })
         let courbePrev = await CourbePrev.findOne({ _utilisateur: utilisateur })
         let forme = courbePrev.forme

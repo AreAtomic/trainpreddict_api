@@ -181,9 +181,9 @@ router.get('/id/:id', async (req, res) => {
  * @route GET api/seance
  * @description Permet de récupérer une séances avec son id
  */
-router.get('/:userId/date/:date', async (req, res) => {
+router.get('/date/:date', async (req, res) => {
     const date = req.params.date
-    const plan = await Plan.find({ _utilisateur: req.params.userId })
+    const plan = await Plan.find({ _utilisateur: req.utilisateur._id })
     let seance
 
     for (let i = 0; i < plan[0].SeancesDefinies.length; i++) {
