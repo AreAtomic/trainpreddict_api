@@ -28,13 +28,19 @@ let fitParser = new FitParser({
  * @route POST api/entrainement/:id/resentis
  * Permet d'insérer un resentis dans un entrainement
  */
-router.post('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
+router.put('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
     const entrainementId = req.params.entrainementId
     let seance = await Entrainement.findOneAndUpdate(
         { _id: entrainementId },
         { $set: { ressentis: req.body.ressentis } },
         { new: true, upsert: true }
     )
+
+    if (dayjs(seance.date).toISOString() !== seance.date) {
+        seance.date = dayjs(seance.date).toISOString()
+        seance.save()
+    }
+
     return res.status(200).json({ data: seance })
 })
 
@@ -42,15 +48,25 @@ router.post('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
  * @route POST api/entrainement/:id/typeEntrainement
  * Permet d'insérer un type de séance dans un entrainement
  */
-router.post('/:entrainementId/typeEntrainement', [jwtauth], async (req, res) => {
-    const entrainementId = req.params.entrainementId
-    let seance = await Entrainement.findOneAndUpdate(
-        { _id: entrainementId },
-        { $set: { type_entrainement: req.body.type_entrainement } },
-        { new: true, upsert: true }
-    )
-    return res.status(200).json({ data: seance })
-})
+router.put(
+    '/:entrainementId/typeEntrainement',
+    [jwtauth],
+    async (req, res) => {
+        const entrainementId = req.params.entrainementId
+        let seance = await Entrainement.findOneAndUpdate(
+            { _id: entrainementId },
+            { $set: { type_entrainement: req.body.type_entrainement } },
+            { new: true, upsert: true }
+        )
+
+        if (dayjs(seance.date).toISOString() !== seance.date) {
+            seance.date = dayjs(seance.date).toISOString()
+            seance.save()
+        }
+
+        return res.status(200).json({ data: seance })
+    }
+)
 
 /**
  * @route POST api/entrainement/file
@@ -1031,16 +1047,21 @@ router.post('/file', [jwtauth], async (req, res) => {
  * @description Permet de récupérer une séances avec son id
  */
 router.get('/', [jwtauth], async (req, res) => {
-    let seance = await Entrainement.find({ _utilisateur: req.utilisateur._id })
-    return res.status(200).json({ data: seance.reverse() })
+    try {
+        const seance = await Entrainement.find({
+            _utilisateur: req.utilisateur._id,
+        })
+        return res.status(200).json({ data: seance.reverse() })
+    } catch (err) {
+        return res.status(500).json({ error: 'Une erreur est survenue' })
+    }
 })
 
 /**
  * @route GET api/entrainement
  * @description Permet de récupérer une séances avec son id
  */
-router.get('/analyse/:entrainementId', [jwtauth], async (req, res) => {
-    console.log(req.headers)
+router.get('/:entrainementId', [jwtauth], async (req, res) => {
     axios
         .get(
             `http://localhost:5000/api/entrainement/${req.params.entrainementId}/performance`
@@ -1048,8 +1069,7 @@ router.get('/analyse/:entrainementId', [jwtauth], async (req, res) => {
         .then()
         .catch()
 
-    const seance = await Entrainement.find({
-        _utilisateur: req.params.userId,
+    const seance = await Entrainement.findOne({
         _id: req.params.entrainementId,
     })
 
@@ -1060,7 +1080,7 @@ router.get('/analyse/:entrainementId', [jwtauth], async (req, res) => {
  * @route POST api/entrainement
  * @description Permet de récupérer une séances avec son id
  */
-router.post('/delete/:entrainementId', [jwtauth], async (req, res) => {
+router.delete('/:entrainementId', [jwtauth], async (req, res) => {
     const seance = await Entrainement.findOneAndDelete({
         _utilisateur: req.utilisateur._id,
         _id: req.params.entrainementId,
@@ -1143,6 +1163,7 @@ router.get('/:entrainementId/performance', async (req, res) => {
         { _id: req.params.entrainementId },
         {
             $set: {
+                date: dayjs(entrainement.date).toISOString(),
                 tableau_statistiques: {
                     max_20_mins: [max_20_mins, max_20_mins / profil.poids],
                     max_5_mins: [max_5_mins, max_5_mins / profil.poids],

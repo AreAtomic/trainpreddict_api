@@ -136,8 +136,9 @@ const EntrainementSchema = new Schema({
         required: true,
     },
     ressentis: {
-        type: String,
-        example: '80%',
+        type: Number,
+        example: '0.8',
+        default: 0,
     },
     point_carte: {
         type: Array,
@@ -155,5 +156,7 @@ const EntrainementSchema = new Schema({
         max_5_secs: { type: Array },
     },
 })
+
+EntrainementSchema.index({ date: 1 })
 
 module.exports = mongoose.model('Entrainement', EntrainementSchema)

@@ -11,6 +11,7 @@ var isLeapYear = require('dayjs/plugin/isLeapYear')
 dayjs.extend(weekOfYear)
 dayjs.extend(isoWeeksInYear)
 dayjs.extend(isLeapYear)
+const { jwtauth } = require('../middlewares/auth.middleware')
 
 /**
  * @import Models
@@ -47,12 +48,10 @@ const sort = (tab) => {
  * @route GET /api/statistiques/:userId
  * @description Récupère les statisques pour un utilisateur
  */
-router.get('/:userId', async (req, res) => {
-    console.log('satst')
+router.get('/', [jwtauth], async (req, res) => {
     try {
-        console.log('satst')
-        const statistiques = await Statistiques.find({
-            _utilisateur: req.params.userId,
+        const statistiques = await Statistiques.findOne({
+            _utilisateur: req.utilisateur._id,
         })
         return res.status(200).json({
             data: statistiques,
