@@ -67,10 +67,10 @@ router.get('/', [jwtauth], async (req, res) => {
  * @route POST /api/statistiques/:userId/initialisation
  * @description Initialise les statisques pour un utilisateur
  */
-router.post('/:userId/initialisation', async (req, res) => {
+router.post('/', [jwtauth], async (req, res) => {
     try {
         const utilisateur = await Utilisateur.findOne({
-            _id: req.params.userId,
+            _id: req.utilisateur._id,
         })
 
         const month = {
@@ -178,22 +178,34 @@ router.post('/:userId/initialisation', async (req, res) => {
             entrainement.push(year)
         }
 
-        const statistiques = new Statistiques({
+        let statistiques = Statistiques.findOne({
             _utilisateur: utilisateur.id,
-            entrainement: entrainement,
-            reccord_20_minutes: 0,
-            reccord_5_minutes: 0,
-            reccord_1_minutes: 0,
-            recourd_5_seconds: 0,
         })
 
-        statistiques.save()
+        if (statistiques) {
+            statistiques = await Statistiques.findOneAndUpdate(
+                { _utilisateur: utilisateur.id },
+                { $set: { entrainement: entrainement } },
+                { new: true, upsert: true }
+            )
+        } else {
+            statistiques = new Statistiques({
+                _utilisateur: utilisateur.id,
+                entrainement: entrainement,
+                reccord_20_minutes: 0,
+                reccord_5_minutes: 0,
+                reccord_1_minutes: 0,
+                recourd_5_seconds: 0,
+            })
+            statistiques.save()
+        }
 
         return res
             .status(200)
             .json({ data: statistiques, msg: 'Statiques créée avec succès' })
     } catch (e) {
-        return res.status(200).json({ error: 'Network error' })
+        console.log(e)
+        return res.status(400).json({ error: 'Network error' })
     }
 })
 
@@ -201,7 +213,7 @@ router.post('/:userId/initialisation', async (req, res) => {
  * @route POST /api/statistiques/:userId/updateOne
  * @description Met à jour les statisques pour un utilisateur
  */
-router.post('/:userId/updateOne', async (req, res) => {
+router.post('/entrainement', [jwtauth], async (req, res) => {
     try {
         const months = [
             'janvier',
@@ -218,7 +230,7 @@ router.post('/:userId/updateOne', async (req, res) => {
             'decembre',
         ]
         let statistiques = await Statistiques.findOne({
-            _utilisateur: req.params.userId,
+            _utilisateur: req.utilisateur._id,
         })
 
         // Récupération des données de l'entrainement
@@ -299,14 +311,14 @@ router.post('/:userId/updateOne', async (req, res) => {
  * @route POST /api/statistiques/:userId
  * @description Mise à jour sur tous les entrainements
  */
-router.post('/:userId', async (req, res) => {
+router.put('/', [jwtauth], async (req, res) => {
     try {
         let entrainements = await Entrainement.find({
-            _utilisateur: req.params.userId,
+            _utilisateur: req.utilisateur._id,
         })
 
         let statistiques = await Statistiques.findOne({
-            _utilisateur: req.params.userId,
+            _utilisateur: req.utilisateur._id,
         })
 
         let max_20_mins = statistiques.reccord_20_minutes
@@ -315,10 +327,7 @@ router.post('/:userId', async (req, res) => {
         let max_5_secs = statistiques.recourd_5_seconds
 
         for (let i = 0; i < entrainements.length; i++) {
-            if (
-                entrainements[i].statistiques == undefined ||
-                entrainements[i].statistiques
-            ) {
+            if (!entrainements.statistiques) {
                 const months = [
                     'janvier',
                     'fevrier',
@@ -333,9 +342,6 @@ router.post('/:userId', async (req, res) => {
                     'novembre',
                     'decembre',
                 ]
-                statistiques = await Statistiques.findOne({
-                    _utilisateur: req.params.userId,
-                })
 
                 // Récupération des données de l'entrainement
                 const entrainement = entrainements[i]
@@ -400,21 +406,12 @@ router.post('/:userId', async (req, res) => {
                 }
 
                 // Mise à jour
-                statistiques = await Statistiques.findOneAndUpdate(
-                    { _utilisateur: req.params.userId },
-                    {
-                        $set: {
-                            entrainement: statistiques.entrainement,
-                            reccord_20_minutes: max_20_mins,
-                            reccord_5_minutes: max_5_mins,
-                            reccord_1_minutes: max_1_min,
-                            recourd_5_seconds: max_5_secs,
-                        },
-                    },
-                    { upsert: true }
-                )
+                statistiques.reccord_20_minutes = max_20_mins
+                statistiques.reccord_5_minutes = max_5_mins
+                statistiques.reccord_1_minutes = max_1_min
+                statistiques.recourd_5_seconds = max_5_secs
 
-                let entrainement_uptated = await Entrainement.findOneAndUpdate(
+                await Entrainement.findOneAndUpdate(
                     { _id: entrainement.id },
                     { $set: { statistiques: true } },
                     { upsert: true }
@@ -422,6 +419,19 @@ router.post('/:userId', async (req, res) => {
             }
         }
 
+        statistiques.save()
+
+        await Statistiques.findOneAndUpdate(
+            { _utilisateur: req.utilisateur._id },
+            {
+                entrainement: statistiques.entrainement,
+                reccord_20_minutes: statistiques.reccord_20_minutes,
+                reccord_5_minutes: statistiques.reccord_5_minutes,
+                reccord_1_minutes: statistiques.reccord_1_minutes,
+                recourd_5_seconds: statistiques.recourd_5_seconds,
+            },
+            { upsert: true, new: true }
+        )
         return res.status(200).json({
             data: statistiques,
             msg: 'Statstiques récupérées avec succès',
