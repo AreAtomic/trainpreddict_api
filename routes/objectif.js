@@ -30,8 +30,8 @@ router.post(
     ],
     async (req, res) => {
         try {
-            console.log(req.body)
             const utilisateur = req.utilisateur._id
+            const objectifs = await Objectif.find({_utilisateur: req.utilisateur.id})
 
             const {
                 date_objectif,
@@ -65,6 +65,7 @@ router.post(
 
             for (let i = 0; i < objectif.length; i++) {
                 if (dayjs(date_debut).isBefore(objectif[i].date_objectif)) {
+                    console.log("Date impossible")
                     return res.status(200).json({
                         error:
                             "Impossible de créer un objectif pour lequel tu commences à t'entrainer avant la fin d'un autre objectif",
@@ -74,8 +75,9 @@ router.post(
 
             var date_d = new Date(date_debut)
             var date_o = new Date(date_objectif)
-            console.log(date_d.getMonth(), date_o.getMonth())
-            if (date_o.getMonth() - date_d.getMonth() < 3) {
+
+            if (date_o.getMonth() - date_d.getMonth() < 3 && date_o.getFullYear() === date_d.getFullYear()) {
+                console.log("Mois trop court impossible")
                 return res.status(200).json({
                     error:
                         "Il doit y a avoir au moins 3 mois d'écart entre le début de l'entrainement et la réalisation de l'objectif",
@@ -85,12 +87,15 @@ router.post(
             objectif = new Objectif(objectifInfo)
             objectif.save()
 
-            console.log(objectif)
+            console.log("Save :\n" + objectif)
+            objectifs.push(objectif)
 
+            console.log(objectifs)            
             return res
                 .status(200)
-                .json({ data: [objectif], msg: 'Objectif créé' })
+                .json({ data: [objectifs], msg: 'Objectif créé' })
         } catch (err) {
+            console.log(err)
             return res.status(400).json({ error: err.message })
         }
     }
@@ -169,10 +174,7 @@ router.put(
 router.get('/', [jwtauth], async (req, res) => {
     const utilisateur = req.utilisateur._id
     try {
-        var objectif = await Objectif.find({ _utilisateur: utilisateur })
-        if (objectif.length > 1) {
-            objectif = sort(objectif)
-        }
+        const objectif = await Objectif.find({ _utilisateur: utilisateur }).sort({date_objectif: -1})
 
         return res
             .status(200)
@@ -259,22 +261,22 @@ router.put('/:objectifId', [jwtauth], async (req, res) => {
 module.exports = router
 
 // Tri bulle
-function sort(tab) {
-    var changed
-    do {
-        changed = false
-        for (var i = 0; i < tab.length - 1; i++) {
-            if (
-                dayjs(tab[i].date_objectif).isBefore(
-                    dayjs(tab[i + 1].date_objectif)
-                )
-            ) {
-                var tmp = tab[i]
-                tab[i] = tab[i + 1]
-                tab[i + 1] = tmp
-                changed = true
-            }
-        }
-    } while (changed)
-    return tab
-}
+// function sort(tab) {
+//     var changed
+//     do {
+//         changed = false
+//         for (var i = 0; i < tab.length - 1; i++) {
+//             if (
+//                 dayjs(tab[i].date_objectif).isBefore(
+//                     dayjs(tab[i + 1].date_objectif)
+//                 )
+//             ) {
+//                 var tmp = tab[i]
+//                 tab[i] = tab[i + 1]
+//                 tab[i + 1] = tmp
+//                 changed = true
+//             }
+//         }
+//     } while (changed)
+//     return tab
+// }
