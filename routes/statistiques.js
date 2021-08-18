@@ -45,7 +45,7 @@ const sort = (tab) => {
 }
 
 /**
- * @route GET /api/statistiques/:userId
+ * @route GET /api/statistiques
  * @description Récupère les statisques pour un utilisateur
  */
 router.get('/', [jwtauth], async (req, res) => {
@@ -64,7 +64,7 @@ router.get('/', [jwtauth], async (req, res) => {
 })
 
 /**
- * @route POST /api/statistiques/:userId/initialisation
+ * @route POST /api/statistiques/
  * @description Initialise les statisques pour un utilisateur
  */
 router.post('/', [jwtauth], async (req, res) => {
@@ -210,7 +210,7 @@ router.post('/', [jwtauth], async (req, res) => {
 })
 
 /**
- * @route POST /api/statistiques/:userId/updateOne
+ * @route POST /api/statistiques/entrainement
  * @description Met à jour les statisques pour un utilisateur
  */
 router.post('/entrainement', [jwtauth], async (req, res) => {
@@ -308,7 +308,7 @@ router.post('/entrainement', [jwtauth], async (req, res) => {
 })
 
 /**
- * @route POST /api/statistiques/:userId
+ * @route PUT /api/statistiques/:userId
  * @description Mise à jour sur tous les entrainements
  */
 router.put('/', [jwtauth], async (req, res) => {

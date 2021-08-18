@@ -20,9 +20,7 @@ const Utilisateur = require('../models/Utilisateur')
  * @description Permet de créer un plan d'entrainement pour l'utilisateur
  */
 router.post('/', [jwtauth], async (req, res) => {
-    console.log('plan')
     try {
-        console.log('plan 2')
         // Données du plan
         const utilisateur = req.utilisateur._id
         // Données pour la création du plan

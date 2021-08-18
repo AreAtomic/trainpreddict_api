@@ -25,7 +25,7 @@ let fitParser = new FitParser({
 })
 
 /**
- * @route POST api/entrainement/:id/resentis
+ * @route PUT api/entrainement/:id/resentis
  * Permet d'insérer un resentis dans un entrainement
  */
 router.put('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
@@ -48,25 +48,21 @@ router.put('/:entrainementId/ressentis', [jwtauth], async (req, res) => {
  * @route POST api/entrainement/:id/typeEntrainement
  * Permet d'insérer un type de séance dans un entrainement
  */
-router.put(
-    '/:entrainementId/typeEntrainement',
-    [jwtauth],
-    async (req, res) => {
-        const entrainementId = req.params.entrainementId
-        let seance = await Entrainement.findOneAndUpdate(
-            { _id: entrainementId },
-            { $set: { type_entrainement: req.body.type_entrainement } },
-            { new: true, upsert: true }
-        )
+router.put('/:entrainementId/typeEntrainement', [jwtauth], async (req, res) => {
+    const entrainementId = req.params.entrainementId
+    let seance = await Entrainement.findOneAndUpdate(
+        { _id: entrainementId },
+        { $set: { type_entrainement: req.body.type_entrainement } },
+        { new: true, upsert: true }
+    )
 
-        if (dayjs(seance.date).toISOString() !== seance.date) {
-            seance.date = dayjs(seance.date).toISOString()
-            seance.save()
-        }
-
-        return res.status(200).json({ data: seance })
+    if (dayjs(seance.date).toISOString() !== seance.date) {
+        seance.date = dayjs(seance.date).toISOString()
+        seance.save()
     }
-)
+
+    return res.status(200).json({ data: seance })
+})
 
 /**
  * @route POST api/entrainement/file
@@ -1077,17 +1073,22 @@ router.get('/:entrainementId', [jwtauth], async (req, res) => {
 })
 
 /**
- * @route POST api/entrainement
- * @description Permet de récupérer une séances avec son id
+ * @route DELETE api/entrainement
+ * @description Permet de supprimer une séances avec son id
  */
 router.delete('/:entrainementId', [jwtauth], async (req, res) => {
+    console.log('supression')
     const seance = await Entrainement.findOneAndDelete({
         _utilisateur: req.utilisateur._id,
         _id: req.params.entrainementId,
     })
 
+    const entrainements = await Entrainement.find({
+        _utilisateur: req.utilisateur._id,
+    })
+
     return res.status(200).json({
-        data: seance,
+        data: entrainements.reverse(),
         msg: `L'entrainement ${req.params.entrainementId} a été supprimé`,
     })
 })
