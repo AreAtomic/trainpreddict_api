@@ -42,7 +42,13 @@ let tokenValidation = async (req, res, next) => {
                     config.get('secret'),
                     { expiresIn: '10d' }
                 )
-                req.utilisateur = { utilisateur }
+                req.utilisateur = {
+                    _id: utilisateur._id,
+                    email: utilisateur.email,
+                    prenom: utilisateur.prenom,
+                    nom: utilisateur.prenom,
+                    token: utilisateur.token,
+                }
                 next()
             } else {
                 let utilisateur = await Utilisateur.findOne({
