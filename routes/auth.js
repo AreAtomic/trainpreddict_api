@@ -9,6 +9,7 @@ const dayjs = require('dayjs')
 const jwt = require('jsonwebtoken')
 const config = require('config')
 const hasher = 10
+
 /**
  * @import Models
  */
@@ -47,8 +48,6 @@ router.post('/login', async (req, res) => {
         /* Check first log */
         const info = await InfoSup.findOne({ _utilisateur: utilisateur.id })
         const profil = await Profil.findOne({ _utilisateur: utilisateur.id })
-
-        console.log(info, profil)
 
         return res.status(200).json({
             data: {
@@ -160,7 +159,7 @@ router.get('/:email/resetpassword', async (req, res) => {
         subject: 'Réinitialisation mot de passe',
         text: `Bonjour,
 
-      Vous avez perdu votre mot de passe et vous souhaitez le changer? Vous n'avez qu'à suivre ce lien http://trainpreddict.fr/password/${user.id} 
+      Vous avez perdu votre mot de passe et vous souhaitez le changer? Vous n'avez qu'à suivre ce lien https://trainpreddict.fr/password/${user.id} 
 
       Si vous n'êtes pas à l'origine de cette demande repondez nous à ce mail.
 

@@ -80,17 +80,15 @@ router.put('/', [jwtauth], async (req, res) => {
             { new: true, upsert: true }
         )
 
-        return res
-            .status(200)
-            .send({
-                data: {
-                    _id: utilisateur._id,
-                    nom: utilisateur.nom,
-                    prenom: utilisateur.prenom,
-                    email: utilisateur.email,
-                },
-                msg: 'Mot de passe mis à jour',
-            })
+        return res.status(200).send({
+            data: {
+                _id: utilisateur._id,
+                nom: utilisateur.nom,
+                prenom: utilisateur.prenom,
+                email: utilisateur.email,
+            },
+            msg: 'Mot de passe mis à jour',
+        })
     } catch (err) {
         if (err.indexOf('Illegal arguments')) {
             return res
@@ -105,7 +103,7 @@ router.put('/', [jwtauth], async (req, res) => {
  * @route POST api/utilisateur/link
  * @description Envoie d'un mail pour récupération du mot de passe
  *  */
-router.post('/link', async (req, res) => {
+router.post('/:userId/link', async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10)
 
@@ -128,7 +126,7 @@ router.post('/link', async (req, res) => {
             .send({ data: utilisateur, msg: 'Mot de passe mis à jour' })
     } catch (e) {
         console.log(e)
-        return res.status(200).json({ error: 'Serveur erreur', log: e })
+        return res.status(400).json({ error: 'Serveur erreur' })
     }
 })
 
