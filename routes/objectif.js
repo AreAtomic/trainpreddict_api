@@ -93,7 +93,7 @@ router.post(
             console.log(objectifs)            
             return res
                 .status(200)
-                .json({ data: [objectifs], msg: 'Objectif créé' })
+                .json({ data: objectifs, msg: 'Objectif créé' })
         } catch (err) {
             console.log(err)
             return res.status(400).json({ error: err.message })
