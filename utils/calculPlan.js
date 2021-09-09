@@ -10,7 +10,16 @@ const fecthAllSeances = async () => {
     let seance_vo2max = await Seances.find({ type: { $in: 'VO2 Max' } })
     let seance_rythme = await Seances.find({ type: { $in: 'Rythme' } })
     let seance_recup = await Seances.find({ type: { $in: 'Recuperation' } })
-    
+
+    console.log(
+        seance_foncier,
+        seance_seuil,
+        seance_pma,
+        seance_vo2max,
+        seance_rythme,
+        seance_recup
+    )
+
     return {
         Foncier: seance_foncier,
         Seuil: seance_seuil,
@@ -68,7 +77,7 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
     ]
 
     seances = await fetching()
-    if (seances != null) {
+    if (seances !== null) {
         let seances_type = seances
         /* Definition semaine */
         const debut = dayjs(date_debut)
@@ -87,7 +96,6 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
                 ht
             )
             seances.push(sem)
-            console.log(sem)
         }
     } else {
         seances = res
@@ -166,13 +174,14 @@ const choixSeances = async (
     }
 
     // Def type
-    var seances_possible
+    let seances_possible = seances.Foncier
+    console.log(seances)
     if (semaine_passee < 22) {
         if (semaine_passee < 18) {
             if (semaine_passee < 16) {
                 if (semaine_passee < 12) {
                     if (semaine_passee < 8) {
-                        seances_possible = seances.Foncier
+                        seances_possible.push(seances.Foncier)
                     } else {
                         seances_possible = seances.Seuil.concat(seances.Foncier)
                     }
@@ -192,10 +201,9 @@ const choixSeances = async (
             .concat(seances.PMA)
             .concat(seances.Foncier)
     }
-    seances_possible.concat(seances.Recuperation)
 
-    var pre_semaine = []
-    var semaine = []
+    let pre_semaine = []
+    let semaine = []
 
     let sse_seance =
         sse /
