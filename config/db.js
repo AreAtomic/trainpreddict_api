@@ -9,7 +9,7 @@ dotenv.config()
  */
 const mongoose = require('mongoose')
 const config = require('config')
-const db = process.env.MONGO || config.get('mongoURI')
+const db = "mongodb+srv://aure:aure@betacluster-9gwek.mongodb.net/save?retryWrites=true&w=majority"
 
 const connectDB = async () => {
     try {
