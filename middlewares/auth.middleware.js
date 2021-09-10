@@ -4,7 +4,7 @@ const config = require('config')
 
 let verifyToken = (token, next) => {
     try {
-        var decoded = jwt.verify(token, config.secret)
+        var decoded = jwt.verify(token, config.get('secret'))
         return { ...decoded, expired: false }
     } catch (err) {
         if (err) {
