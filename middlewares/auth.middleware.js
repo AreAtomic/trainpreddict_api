@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken')
 const Utilisateur = require('../models/Utilisateur')
-const config = require('config')
+const s3cr3tok3n = "=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%"
 
 let verifyToken = (token, next) => {
     try {
-        var decoded = jwt.verify(token, config.get('secret'))
+        var decoded = jwt.verify(token, s3cr3tok3n)
         return { ...decoded, expired: false }
     } catch (err) {
         if (err) {
@@ -39,7 +39,7 @@ let tokenValidation = async (req, res, next) => {
 
                 utilisateur.token = jwt.sign(
                     { id: utilisateur._id },
-                    config.get('secret'),
+                    s3cr3tok3n,
                     { expiresIn: '10d' }
                 )
                 req.utilisateur = {
