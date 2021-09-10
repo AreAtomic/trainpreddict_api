@@ -7,8 +7,8 @@ const bcrypt = require('bcryptjs')
 const nodemailer = require('nodemailer')
 const dayjs = require('dayjs')
 const jwt = require('jsonwebtoken')
-const config = require('config')
 const hasher = 10
+const s3cr3tok3n = "=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%"
 
 /**
  * @import Models
@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
 
         utilisateur.token = jwt.sign(
             { id: utilisateur._id },
-            config.get('secret'),
+            s3cr3tok3n,
             { expiresIn: '10d' }
         )
 
@@ -110,7 +110,7 @@ router.post('/signup', async (req, res) => {
 
         utilisateur.token = jwt.sign(
             { id: utilisateur._id },
-            config.get('secret'),
+            s3cr3tok3n,
             { expiresIn: '10d' }
         )
 
