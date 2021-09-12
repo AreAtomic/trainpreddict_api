@@ -8,10 +8,10 @@ const dayjs = require('dayjs')
 /**
  * @import Models
  */
-const Profil = require('../models/Profil')
-const Utilisateur = require('../models/Utilisateur')
-const InfoSup = require('../models/InfoSup')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const Profil = require('../../models/Profil')
+const Utilisateur = require('../../models/Utilisateur')
+const InfoSup = require('../../models/InfoSup')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 
 /**
  * @route POST /api/profil

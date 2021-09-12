@@ -10,12 +10,12 @@ const hasher = 10
 /**
  * @import Models
  */
-const Utilisateur = require('../models/Utilisateur')
-const Admin = require('../models/Admin')
-const StructureUtilisateur = require('../models/StructureUtilisateur')
-const Statistiques = require('../models/Statistiques')
-const InfoSup = require('../models/InfoSup')
-const Profil = require('../models/Profil')
+const Utilisateur = require('../../models/Utilisateur')
+const Admin = require('../../models/Admin')
+const StructureUtilisateur = require('../../models/StructureUtilisateur')
+const Statistiques = require('../../models/Statistiques')
+const InfoSup = require('../../models/InfoSup')
+const Profil = require('../../models/Profil')
 
 /**
  * @route POST /api/admin/

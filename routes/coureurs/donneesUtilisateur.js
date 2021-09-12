@@ -3,11 +3,11 @@
  */
 const express = require('express')
 const router = express.Router()
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 /**
  * @import Models
  */
-const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
+const DonneesUtilisateur = require('../../models/DonneesUtilisateur.js')
 
 /**
  * @route POST api/donneesUtilisateur

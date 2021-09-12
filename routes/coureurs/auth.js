@@ -13,10 +13,10 @@ const s3cr3tok3n = "=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}b
 /**
  * @import Models
  */
-const Utilisateur = require('../models/Utilisateur')
-const InfoSup = require('../models/InfoSup')
-const Profil = require('../models/Profil')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const Utilisateur = require('../../models/Utilisateur')
+const InfoSup = require('../../models/InfoSup')
+const Profil = require('../../models/Profil')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 
 /**
  * @route post api/auth/login

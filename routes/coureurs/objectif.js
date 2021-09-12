@@ -5,11 +5,11 @@ const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
 const { check } = require('express-validator')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 /**
  * @import Models
  */
-const Objectif = require('../models/Objectif')
+const Objectif = require('../../models/Objectif')
 
 /**
  * @route POST api/objectif

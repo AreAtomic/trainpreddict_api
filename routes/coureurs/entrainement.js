@@ -6,13 +6,13 @@ const router = express.Router()
 const dayjs = require('dayjs')
 const FitParser = require('fit-file-parser').default
 const axios = require('axios')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 
 /**
  * @import Models
  */
-const Entrainement = require('../models/Entrainement')
-const Profil = require('../models/Profil')
+const Entrainement = require('../../models/Entrainement')
+const Profil = require('../../models/Profil')
 
 // Create a FitParser instance (options argument is optional)
 let fitParser = new FitParser({

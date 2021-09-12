@@ -7,8 +7,8 @@ const { check } = require('express-validator')
 /**
  * @import Models
  */
-const Seance = require('../models/Seance')
-const Plan = require('../models/Plan')
+const Seance = require('../../models/Seance')
+const Plan = require('../../models/Plan')
 
 conversion_minute = (time) => {
     duree_heure = parseInt(time.charAt(0) + time.charAt(1))
@@ -179,7 +179,7 @@ router.get('/id/:id', async (req, res) => {
 
 /**
  * @route GET api/seance
- * @description Permet de récupérer une séances avec son id
+ * @description Permet de récupérer une séances avec sa date
  */
 router.get('/date/:date', async (req, res) => {
     const date = req.params.date

@@ -4,11 +4,11 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 /**
  * @import Models
  */
-const Utilisateur = require('../models/Utilisateur')
+const Utilisateur = require('../../models/Utilisateur')
 
 /**
  * @route get api/utilisateur

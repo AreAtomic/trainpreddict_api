@@ -6,7 +6,7 @@ const router = express.Router()
 /**
  * @import Models
  */
-const Utilisateur = require('../models/Utilisateur')
+const Utilisateur = require('../../models/Utilisateur')
 
 router.post('/createuser', async function (req, res) {
     const mdp = [

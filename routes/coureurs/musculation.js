@@ -6,8 +6,8 @@ const router = express.Router()
 /**
  * @import Models
  */
-const ExerciceMusculation = require('../models/ExerciceMusculation')
-const SeanceMusculation = require('../models/SeanceMusculation')
+const ExerciceMusculation = require('../../models/ExerciceMusculation')
+const SeanceMusculation = require('../../models/SeanceMusculation')
 
 /**
  * @route post api/auth/login

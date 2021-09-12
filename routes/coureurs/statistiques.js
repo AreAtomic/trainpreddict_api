@@ -11,14 +11,14 @@ var isLeapYear = require('dayjs/plugin/isLeapYear')
 dayjs.extend(weekOfYear)
 dayjs.extend(isoWeeksInYear)
 dayjs.extend(isLeapYear)
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 
 /**
  * @import Models
  */
-const Entrainement = require('../models/Entrainement')
-const Statistiques = require('../models/Statistiques')
-const Utilisateur = require('../models/Utilisateur')
+const Entrainement = require('../../models/Entrainement')
+const Statistiques = require('../../models/Statistiques')
+const Utilisateur = require('../../models/Utilisateur')
 const { statSync } = require('fs')
 
 const toHoursInt = (duree) => {

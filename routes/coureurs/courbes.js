@@ -6,15 +6,15 @@ const router = express.Router()
 const dayjs = require('dayjs')
 const dayOfYear = require('dayjs/plugin/dayOfYear')
 dayjs.extend(dayOfYear)
-const { jwtauth } = require('../middlewares/auth.middleware')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 
 /**
  * @import Models
  */
-const CourbePrev = require('../models/CourbesPrev')
-const CourbeRea = require('../models/CourbesRea')
-const Entrainement = require('../models/Entrainement')
-const Plan = require('../models/Plan')
+const CourbePrev = require('../../models/CourbesPrev')
+const CourbeRea = require('../../models/CourbesRea')
+const Entrainement = require('../../models/Entrainement')
+const Plan = require('../../models/Plan')
 
 /**
  * @route GET /api/courbes/

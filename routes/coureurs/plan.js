@@ -4,16 +4,16 @@
 const express = require('express')
 const router = express.Router()
 const dayjs = require('dayjs')
-const calculPlan = require('../utils/calculPlan')
-const { jwtauth } = require('../middlewares/auth.middleware')
+const calculPlan = require('../../utils/calculPlan')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 /**
  * @import Models
  */
-const Objectif = require('../models/Objectif')
-const DonneesUtilisateur = require('../models/DonneesUtilisateur.js')
-const Plan = require('../models/Plan')
-const Entrainement = require('../models/Entrainement')
-const Utilisateur = require('../models/Utilisateur')
+const Objectif = require('../../models/Objectif')
+const DonneesUtilisateur = require('../../models/DonneesUtilisateur.js')
+const Plan = require('../../models/Plan')
+const Entrainement = require('../../models/Entrainement')
+const Utilisateur = require('../../models/Utilisateur')
 
 /**
  * @route POST api/plan
