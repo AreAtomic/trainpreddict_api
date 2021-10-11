@@ -102,16 +102,36 @@ app.use(
     cors(corsOptionsDelegate),
     require('./routes/coureurs/utilisateur')
 )
-app.use('/api/auth', cors(corsOptionsDelegate), require('./routes/coureurs/auth'))
-app.use('/api/infosup', cors(corsOptionsDelegate), require('./routes/coureurs/infosup'))
-app.use('/api/profil', cors(corsOptionsDelegate), require('./routes/coureurs/profil'))
+app.use(
+    '/api/auth',
+    cors(corsOptionsDelegate),
+    require('./routes/coureurs/auth')
+)
+app.use(
+    '/api/infosup',
+    cors(corsOptionsDelegate),
+    require('./routes/coureurs/infosup')
+)
+app.use(
+    '/api/profil',
+    cors(corsOptionsDelegate),
+    require('./routes/coureurs/profil')
+)
 app.use(
     '/api/objectif',
     cors(corsOptionsDelegate),
-    require('./routes/objectif')
+    require('./routes/coureurs/objectif')
 )
-app.use('/api/plan', cors(corsOptionsDelegate), require('./routes/coureurs/plan'))
-app.use('/api/courbes', cors(corsOptionsDelegate), require('./routes/coureurs/courbes'))
+app.use(
+    '/api/plan',
+    cors(corsOptionsDelegate),
+    require('./routes/coureurs/plan')
+)
+app.use(
+    '/api/courbes',
+    cors(corsOptionsDelegate),
+    require('./routes/coureurs/courbes')
+)
 app.use(
     '/api/donneesUtilisateur',
     cors(corsOptionsDelegate),
@@ -121,7 +141,7 @@ app.use(
     '/api/entrainement',
     cors(corsOptionsDelegate),
     require('./routes/coureurs/entrainement')
-    )
+)
 app.use(
     '/api/statistiques',
     cors(corsOptionsDelegate),
@@ -136,12 +156,25 @@ app.use(
 /**
  * ROUTER SEANCES *
  */
-app.use('/api/seance', cors(corsOptionsDelegate), require('./routes/seances/seances'))
+app.use(
+    '/api/seance',
+    cors(corsOptionsDelegate),
+    require('./routes/seances/seances')
+)
+app.use(
+    '/api/seance/blocs',
+    cors(corsOptionsDelegate),
+    require('./routes/seances/blocs')
+)
 
 /**
  * ROUTER ASSISTANT *
  */
-app.use('/api/admin', cors(corsOptionsDelegate), require('./routes/assistants/admin'))
+app.use(
+    '/api/admin',
+    cors(corsOptionsDelegate),
+    require('./routes/assistants/admin')
+)
 
 if (process.env.NODE_ENV == 'development') {
     const PORT = process.env.PORT || 5000

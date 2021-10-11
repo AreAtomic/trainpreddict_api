@@ -1,3 +1,4 @@
+const { ObjectId } = require('bson')
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
@@ -105,6 +106,13 @@ const SeanceSchema = new Schema({
     score_stress_entrainement: {
         type: Number,
         required: true,
+    },
+
+    // Createur de la seance
+    _utilisateur: {
+        type: Schema.Types.ObjectId,
+        ref: 'Utilisateur',
+        required: false,
     },
 })
 

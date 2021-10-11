@@ -4,6 +4,7 @@
 const express = require('express')
 const router = express.Router()
 const { check } = require('express-validator')
+const { jwtauth } = require('../../middlewares/auth.middleware')
 /**
  * @import Models
  */
@@ -23,8 +24,78 @@ conversion_minute = (time) => {
  * @route POST api/seance
  * @description Permet de créer une seance d'entrainement
  */
+router.post('/', [jwtauth], async (req, res) => {
+    let {
+        titre,
+        type,
+        duree,
+        estimation_distance,
+        estimation_deniv,
+        specifique,
+        description,
+        Z1,
+        Z2,
+        Z3,
+        Z4,
+        Z5,
+        Z6,
+        Z7,
+        puissance_moyenne,
+        charge_entrainement_estime,
+        intensite_travail,
+        score_stress_entrainement,
+    } = req.body
+
+    try {
+        let seance = await Seance.findOne({
+            titre: titre,
+            _utilisateur: req.utilisateur._id,
+        })
+        if (seance) {
+            return res.status(400).json({
+                error: `La séance ${titre} existe déjà`,
+            })
+        }
+        let utilisateur = req.utilisateur._id
+
+        seance = new Seance({
+            titre,
+            type,
+            duree,
+            estimation_distance,
+            estimation_deniv,
+            specifique,
+            description,
+            Z1,
+            Z2,
+            Z3,
+            Z4,
+            Z5,
+            Z6,
+            Z7,
+            puissance_moyenne,
+            charge_entrainement_estime,
+            intensite_travail,
+            score_stress_entrainement,
+            _utilisateur: utilisateur,
+        })
+
+        seance.save()
+
+        return res
+            .status(200)
+            .json({ data: seance, msg: 'Séance créée avec succès.' })
+    } catch (e) {
+        res.status(400).json({ error: 'Une erreur est survenue', e })
+    }
+})
+
+/**
+ * @route POST api/seance/ancien
+ * @description Permet de créer une seance d'entrainement
+ */
 router.post(
-    '/',
+    '/ancien',
     [
         check('type', 'Le type est une chaine de caractère').isString(),
         check('duree', 'La duree est au format "hh:mm:ss"').isString(),
@@ -40,9 +111,10 @@ router.post(
         check('Z6', 'Temps en zone est en minutes').isString(),
         check('Z7', 'Temps en zone est en minutes').isString(),
         check('puissance_moyenne', 'en poucentage').isFloat(),
+        jwtauth,
     ],
     async (req, res) => {
-        var {
+        let {
             titre,
             type,
             duree,
@@ -133,6 +205,8 @@ router.post(
                 return `<li key={${i}}>${serie}</li>`
             })
 
+            let utilisateur = req.utilisateur._id
+
             seance = new Seance({
                 titre,
                 type,
@@ -153,6 +227,7 @@ router.post(
                 charge_entrainement_estime,
                 intensite_travail,
                 score_stress_entrainement,
+                _utilisateur: utilisateur,
             })
 
             seance.save()
@@ -168,12 +243,11 @@ router.post(
  * @route GET api/seance
  * @description Permet de récupérer une séances avec son id
  */
-router.get('/id/:id', async (req, res) => {
-    
-        var mongo = require('mongodb');
-        var seance_id = new mongo.ObjectID( req.params.id);
-        const seance= await Seance.findOne({'_id': seance_id});
-    
+router.get('/id/:id', [jwtauth], async (req, res) => {
+    var mongo = require('mongodb')
+    var seance_id = new mongo.ObjectID(req.params.id)
+    const seance = await Seance.findOne({ _id: seance_id })
+
     return res.status(200).json({ data: seance })
 })
 
@@ -181,7 +255,7 @@ router.get('/id/:id', async (req, res) => {
  * @route GET api/seance
  * @description Permet de récupérer une séances avec sa date
  */
-router.get('/date/:date', async (req, res) => {
+router.get('/date/:date', [jwtauth], async (req, res) => {
     const date = req.params.date
     const plan = await Plan.find({ _utilisateur: req.utilisateur._id })
     let seance
@@ -199,7 +273,7 @@ router.get('/date/:date', async (req, res) => {
  * @route GET api/seance
  * @description Permet de récupérer des séances avec leur type
  */
-router.get('/type', async (req, res) => {
+router.get('/type', [jwtauth], async (req, res) => {
     const type = req.body.type
     let seances = await Seance.find({ type: { $in: type } })
 
@@ -212,7 +286,7 @@ router.get('/type', async (req, res) => {
  * @route GET api/seance
  * @description Permet de récupérer toutes les séances
  */
-router.get('/', async (req, res) => {
+router.get('/', [jwtauth], async (req, res) => {
     try {
         const seances = await Seance.find({})
         return res.status(200).json({

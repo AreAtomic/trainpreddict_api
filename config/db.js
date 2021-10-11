@@ -9,11 +9,11 @@ dotenv.config()
  */
 const mongoose = require('mongoose')
 const config = require('config')
-const db = "mongodb+srv://aure:aure@betacluster-9gwek.mongodb.net/save?retryWrites=true&w=majority"
+const db_coureur = "mongodb+srv://aure:aure@betacluster-9gwek.mongodb.net/save?retryWrites=true&w=majority"
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(db, {
+        await mongoose.connect(db_coureur, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useFindAndModify: false,
