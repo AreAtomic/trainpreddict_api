@@ -88,87 +88,43 @@ app.get('/', function (req, res) {
     res.send('Running')
 })
 
-/**
- * ROUTER COUREURS *
- */
 app.use(
     '/api/utilisateur',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/utilisateur')
+    require('./routes/utilisateur')
 )
-app.use(
-    '/api/auth',
-    cors(corsOptionsDelegate),
-    require('./routes/coureurs/auth')
-)
-app.use(
-    '/api/infosup',
-    cors(corsOptionsDelegate),
-    require('./routes/coureurs/infosup')
-)
-app.use(
-    '/api/profil',
-    cors(corsOptionsDelegate),
-    require('./routes/coureurs/profil')
-)
+app.use('/api/auth', cors(corsOptionsDelegate), require('./routes/auth'))
+app.use('/api/infosup', cors(corsOptionsDelegate), require('./routes/infosup'))
+app.use('/api/profil', cors(corsOptionsDelegate), require('./routes/profil'))
 app.use(
     '/api/objectif',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/objectif')
+    require('./routes/objectif')
 )
-app.use(
-    '/api/plan',
-    cors(corsOptionsDelegate),
-    require('./routes/coureurs/plan')
-)
-app.use(
-    '/api/courbes',
-    cors(corsOptionsDelegate),
-    require('./routes/coureurs/courbes')
-)
+app.use('/api/plan', cors(corsOptionsDelegate), require('./routes/plan'))
+app.use('/api/courbes', cors(corsOptionsDelegate), require('./routes/courbes'))
 app.use(
     '/api/donneesUtilisateur',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/donneesUtilisateur')
+    require('./routes/donneesUtilisateur')
 )
+app.use('/api/seance', cors(corsOptionsDelegate), require('./routes/seances'))
 app.use(
     '/api/entrainement',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/entrainement')
+    require('./routes/entrainement')
 )
 app.use(
     '/api/statistiques',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/statistiques')
+    require('./routes/statistiques')
 )
 app.use(
     '/api/musculation',
     cors(corsOptionsDelegate),
-    require('./routes/coureurs/musculation')
+    require('./routes/musculation')
 )
-
-/**
- * ROUTER SEANCES *
- */
-app.use(
-    '/api/seance',
-    cors(corsOptionsDelegate),
-    require('./routes/seances/seances')
-)
-app.use(
-    '/api/seance/blocs',
-    cors(corsOptionsDelegate),
-    require('./routes/seances/blocs')
-)
-
-/**
- * ROUTER ASSISTANT *
- */
-app.use(
-    '/api/admin',
-    cors(corsOptionsDelegate),
-    require('./routes/assistants/admin')
-)
+app.use('/api/admin', cors(corsOptionsDelegate), require('./routes/admin'))
 
 if (process.env.NODE_ENV == 'development') {
     const PORT = process.env.PORT || 6001
