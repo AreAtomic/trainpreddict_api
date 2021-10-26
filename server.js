@@ -2,11 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
-const favicon = require('express-favicon')
-const path = require('path')
-const http = require('http')
-const https = require('https')
-const fs = require('fs')
 const dotenv = require('dotenv')
 
 /*
@@ -23,18 +18,7 @@ dotenv.config()
  * Setting express *
  */
 var whitelist = [
-    'http://localhost:5000',
-    'https://localhost:5000',
-    'http://localhost:3000',
-    'https://localhost:3000',
-    'http://localhost',
-    'https://localhost',
-    'http://localhost:6001',
-    'https://localhost:6001',
-    'http://trainpreddict.fr',
-    'https://trainpreddict.fr',
-    'https://trainpreddict.fr:3000',
-    'https://trainpreddict.fr:6001',
+    process.env.ORIGIN_URL
 ]
 
 var corsOptionsDelegate = function (req, callback) {
@@ -50,36 +34,6 @@ var corsOptionsDelegate = function (req, callback) {
 const app = express()
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
-
-// Production mode
-if (process.env.NODE_ENV != 'development') {
-    app.use(function (req, res, next) {
-        res.header('Access-Control-Allow-Origin', 'trainpreddict.fr')
-        res.header(
-            'Access-Control-Headers',
-            'Origin, X-Requested-With, Content-Type, Accept'
-        )
-        next()
-    })
-    // Certificats
-    const privateKey = fs.readFileSync(
-        '/etc/letsencrypt/live/trainpreddict.fr/privkey.pem'
-    )
-    const certificate = fs.readFileSync(
-        '/etc/letsencrypt/live/trainpreddict.fr/cert.pem'
-    )
-    const ca = fs.readFileSync(
-        '/etc/letsencrypt/live/trainpreddict.fr/chain.pem'
-    )
-
-    const credentials = {
-        key: privateKey,
-        cert: certificate,
-        ca: ca,
-    }
-
-    const httpsServer = https.createServer(credentials, app).listen(6001)
-}
 
 /*
  * ROUTER *
@@ -170,7 +124,5 @@ app.use(
     require('./routes/assistants/admin')
 )
 
-if (process.env.NODE_ENV == 'development') {
-    const PORT = process.env.PORT || 6001
-    app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
-}
+const PORT = process.env.NODE_PORT
+app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))

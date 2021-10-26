@@ -8,7 +8,7 @@ const nodemailer = require('nodemailer')
 const dayjs = require('dayjs')
 const jwt = require('jsonwebtoken')
 const hasher = 10
-const s3cr3tok3n = "=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%"
+const s3cr3tok3n = process.env.SECRET_KEY
 
 /**
  * @import Models
