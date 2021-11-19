@@ -119,9 +119,14 @@ app.use(
  * ROUTER ASSISTANT *
  */
 app.use(
-    '/api/admin',
+    '/api/assistant/auth',
     cors(corsOptionsDelegate),
-    require('./routes/assistants/admin')
+    require('./routes/assistants/auth')
+)
+app.use(
+    '/api/assistant/affiliation',
+    cors(corsOptionsDelegate),
+    require('./routes/assistants/affiliation')
 )
 
 const PORT = process.env.NODE_PORT

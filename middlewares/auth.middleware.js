@@ -48,6 +48,7 @@ let tokenValidation = async (req, res, next) => {
                     prenom: utilisateur.prenom,
                     nom: utilisateur.prenom,
                     token: utilisateur.token,
+                    type: utilisateur.type,
                 }
                 next()
             } else {
@@ -61,6 +62,7 @@ let tokenValidation = async (req, res, next) => {
                     prenom: utilisateur.prenom,
                     nom: utilisateur.prenom,
                     token: utilisateur.token,
+                    type: utilisateur.type,
                 }
                 next()
             }
