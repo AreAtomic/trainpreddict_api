@@ -21,8 +21,8 @@ const InfoSup = require('../../models/InfoSup')
 const Profil = require('../../models/Profil')
 
 /**
- * @route POST /api/assistant/
- * @description création d'un compte structure avec envoie d'un mail
+ * @route POST /api/assistant/register
+ * @description création d'un compte structure avec envoie d'un mail à contact@trainpreddict.fr pour validation
  */
 router.post('/register', async (req, res) => {
     try {
