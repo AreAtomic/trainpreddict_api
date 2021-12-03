@@ -6,7 +6,7 @@
     "scripts": {
         "pretty": "prettier --write \"./**/*.{js,jsx,json}\"",
         "dev": "nodemon server",
-        "start": "nodemon server",
+        "start": "pm2-runtime start ecosystem.config.js --env production",
         "test": "node server.test.js"
     },
     "author": "Aurelien SEBE",
