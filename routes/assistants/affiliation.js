@@ -55,6 +55,7 @@ router.get('/', [jwtauth], async (req, res) => {
     try {
         // Infos sur la structure
         const structureId = req.utilisateur._id
+        console.log(structureId)
 
         if (req.utilisateur.type === 'Coureur') {
             return res.status(300).json({ error: 'Opération non autorisée' })
@@ -79,7 +80,7 @@ router.get('/', [jwtauth], async (req, res) => {
 })
 
 /**
- * @route post /api/assistant
+ * @route post /api/assistant/affiliation
  * @description permet de créer un nouvel utilisateur et de l'affilié à la structure
  */
 router.post('/', [jwtauth], async (req, res) => {

@@ -17,9 +17,9 @@ dotenv.config()
 /*
  * Setting express *
  */
-var whitelist = [
-    process.env.ORIGIN_URL
-]
+var whitelist = JSON.parse(process.env.ORIGIN_URL)
+
+console.log(JSON.parse(process.env.ORIGIN_URL))
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
@@ -127,6 +127,11 @@ app.use(
     '/api/assistant/affiliation',
     cors(corsOptionsDelegate),
     require('./routes/assistants/affiliation')
+)
+app.use(
+    '/api/assistant/utilisateur',
+    cors(corsOptionsDelegate),
+    require('./routes/assistants/utilisateur')
 )
 
 const PORT = process.env.NODE_PORT
