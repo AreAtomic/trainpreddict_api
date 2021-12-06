@@ -1,14 +1,24 @@
+const { ObjectID } = require('bson')
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const UtilisateurSchema = new Schema({
     prenom: {
         type: 'string',
-        required: true,
+        required: false,
     },
     nom: {
         type: 'string',
         required: true,
+    },
+    type: {
+        type: String,
+        enum: ['Coureur', 'Coach', 'Club', 'Admin'],
+        default: 'Coureur'
+    },
+    _structure: {
+        type: Schema.Types.ObjectId,
+        ref: 'Utilisateur',
     },
 
     // Informations pour connexions

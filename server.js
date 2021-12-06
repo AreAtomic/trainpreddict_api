@@ -2,11 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
-const favicon = require('express-favicon')
-const path = require('path')
-const http = require('http')
-const https = require('https')
-const fs = require('fs')
 const dotenv = require('dotenv')
 
 /*
@@ -22,20 +17,7 @@ dotenv.config()
 /*
  * Setting express *
  */
-var whitelist = [
-    'http://localhost:5000',
-    'https://localhost:5000',
-    'http://localhost:3000',
-    'https://localhost:3000',
-    'http://localhost',
-    'https://localhost',
-    'http://localhost:6001',
-    'https://localhost:6001',
-    'http://trainpreddict.fr',
-    'https://trainpreddict.fr',
-    'https://trainpreddict.fr:3000',
-    'https://trainpreddict.fr:6001',
-]
+var whitelist = JSON.parse(process.env.ORIGIN_URL)
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
@@ -50,6 +32,7 @@ var corsOptionsDelegate = function (req, callback) {
 const app = express()
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
+
 
 // Production mode
     app.use(function (req, res, next) {
@@ -164,9 +147,19 @@ app.use(
  * ROUTER ASSISTANT *
  */
 app.use(
-    '/api/admin',
+    '/api/assistant/auth',
     cors(corsOptionsDelegate),
-    require('./routes/assistants/admin')
+    require('./routes/assistants/auth')
+)
+app.use(
+    '/api/assistant/affiliation',
+    cors(corsOptionsDelegate),
+    require('./routes/assistants/affiliation')
+)
+app.use(
+    '/api/assistant/utilisateur',
+    cors(corsOptionsDelegate),
+    require('./routes/assistants/utilisateur')
 )
 
 if (process.env.NODE_ENV != 'development') {
