@@ -19,8 +19,6 @@ dotenv.config()
  */
 var whitelist = JSON.parse(process.env.ORIGIN_URL)
 
-console.log(JSON.parse(process.env.ORIGIN_URL))
-
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
