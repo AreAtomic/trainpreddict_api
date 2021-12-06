@@ -2,11 +2,17 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
+const dotenv = require('dotenv')
 
 /*
  * Connexion Database *
  */
 connectDB()
+
+/**
+ * Config env
+ */
+dotenv.config()
 
 /*
  * Setting express *
