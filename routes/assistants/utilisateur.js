@@ -5,7 +5,9 @@ const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
 const { jwtauth } = require('../../middlewares/auth.middleware')
-const s3cr3tok3n = process.env.SECRET_KEY
+const s3cr3tok3n =
+    process.env.SECRET_KEY ||
+    '=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%'
 
 const onlyUnique = (value, index, self) => {
     return self.indexOf(value) === index
