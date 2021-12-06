@@ -29,6 +29,8 @@ var whitelist = [
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
+    console.log("Cors options")
+    console.log(corsOptions, req.header('Origin'))
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
     } else {
@@ -68,7 +70,7 @@ app.use(fileUpload())
         ca: ca,
     }
 
-    const httpsServer = https.createServer(credentials, app).listen(6001)
+    const httpsServer = https.createServer(credentials, app).listen(6002)
 
 
 /*
@@ -170,6 +172,3 @@ app.use(
     require('./routes/assistants/utilisateur')
 )
 
-
-const PORT = 6001
-app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
