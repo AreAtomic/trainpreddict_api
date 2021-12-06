@@ -52,7 +52,6 @@ app.use(express.json({ extended: false }))
 app.use(fileUpload())
 
 // Production mode
-if (process.env.NODE_ENV != 'development') {
     app.use(function (req, res, next) {
         res.header('Access-Control-Allow-Origin', 'trainpreddict.fr')
         res.header(
@@ -79,7 +78,7 @@ if (process.env.NODE_ENV != 'development') {
     }
 
     const httpsServer = https.createServer(credentials, app).listen(6001)
-}
+
 
 /*
  * ROUTER *
@@ -170,7 +169,7 @@ app.use(
     require('./routes/assistants/admin')
 )
 
-if (process.env.NODE_ENV == 'development') {
-    const PORT = process.env.PORT || 6001
+if (process.env.NODE_ENV != 'development') {
+    const PORT = 6001
     app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
 }
