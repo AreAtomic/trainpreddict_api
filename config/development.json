@@ -1,0 +1,7 @@
+{
+    "NODE_ENV": "development",
+    "NODE_PORT": 6001,
+    "DATABASE": "mongodb+srv://aure:aure@betacluster-9gwek.mongodb.net/save?retryWrites=true&w=majority",
+    "ORIGIN_URL": ["http://localhost:3000","http://localhost:3001", "https://trainpreddict.fr", "https://trainpreddict.fr:3000", "https://trainpreddict-assistant.netlify.app"],
+    "SECRET_KEY": "=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%"
+}
