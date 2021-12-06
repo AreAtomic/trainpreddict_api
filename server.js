@@ -31,6 +31,7 @@ var corsOptionsDelegate = function (req, callback) {
     var corsOptions
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+        req.header('Access-Control-Allow-Origin', req.header('Origin'))
     } else {
         corsOptions = { origin: false } // disable CORS for this request
     }
