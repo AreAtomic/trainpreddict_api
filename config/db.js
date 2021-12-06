@@ -9,7 +9,9 @@ dotenv.config()
  */
 const mongoose = require('mongoose')
 const config = require('config')
-const db_coureur = process.env.DATABASE
+const db_coureur =
+    process.env.DATABASE ||
+    'mongodb+srv://aure:aure@betacluster-9gwek.mongodb.net/save?retryWrites=true&w=majority'
 
 const connectDB = async () => {
     try {

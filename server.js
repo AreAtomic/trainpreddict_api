@@ -2,22 +2,22 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
-const dotenv = require('dotenv')
 
 /*
  * Connexion Database *
  */
 connectDB()
 
-/**
- * dotenv config
- */
-dotenv.config()
-
 /*
  * Setting express *
  */
-var whitelist = JSON.parse(process.env.ORIGIN_URL)
+var whitelist = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://trainpreddict.fr',
+    'https://trainpreddict.fr:3000',
+    'https://trainpreddict-assistant.netlify.app',
+]
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
@@ -132,5 +132,5 @@ app.use(
     require('./routes/assistants/utilisateur')
 )
 
-const PORT = process.env.NODE_PORT
+const PORT = 6001
 app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))

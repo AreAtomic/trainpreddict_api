@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken')
 const Utilisateur = require('../models/Utilisateur')
-const s3cr3tok3n = process.env.SECRET_KEY
+const s3cr3tok3n =
+    process.env.SECRET_KEY ||
+    '=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%'
 
 let verifyToken = (token, next) => {
     try {

@@ -8,7 +8,9 @@ const nodemailer = require('nodemailer')
 const dayjs = require('dayjs')
 const jwt = require('jsonwebtoken')
 const hasher = 10
-const s3cr3tok3n = process.env.SECRET_KEY
+const s3cr3tok3n =
+    process.env.SECRET_KEY ||
+    '=)BPJ4][!&=iF!st#mOt,JY<u94gMr*zLVF:592ga4fvyk.n(&sr((xj8F}be4%'
 
 /**
  * @import Models
@@ -39,11 +41,9 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Mot de passe invalide' })
         }
 
-        utilisateur.token = jwt.sign(
-            { id: utilisateur._id },
-            s3cr3tok3n,
-            { expiresIn: '10d' }
-        )
+        utilisateur.token = jwt.sign({ id: utilisateur._id }, s3cr3tok3n, {
+            expiresIn: '10d',
+        })
 
         /* Check first log */
         const info = await InfoSup.findOne({ _utilisateur: utilisateur.id })
@@ -108,11 +108,9 @@ router.post('/signup', async (req, res) => {
 
         await utilisateur.save()
 
-        utilisateur.token = jwt.sign(
-            { id: utilisateur._id },
-            s3cr3tok3n,
-            { expiresIn: '10d' }
-        )
+        utilisateur.token = jwt.sign({ id: utilisateur._id }, s3cr3tok3n, {
+            expiresIn: '10d',
+        })
 
         return res.status(200).json({
             data: {
