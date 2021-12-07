@@ -43,6 +43,9 @@ var corsOptionsDelegate = function (req, callback) {
 const app = express()
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
+app.use('*', cors(corsOptionsDelegate), (req, res) => {
+    res.status(200)
+})
 
 
 // Production mode
