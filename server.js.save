@@ -3,8 +3,6 @@ const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
-const fs = require('fs')
-const https = require('https')
 
 /*
  * Connexion Database *
@@ -12,28 +10,21 @@ const https = require('https')
 connectDB()
 
 /**
- * Config env
+ * dotenv config
  */
 dotenv.config()
 
 /*
  * Setting express *
  */
-var whitelist = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://trainpreddict.fr',
-    'https://trainpreddict.fr:3000',
-    'https://trainpreddict-assistant.netlify.app',
-]
+var whitelist = JSON.parse(process.env.ORIGIN_URL)
+
+console.log(JSON.parse(process.env.ORIGIN_URL))
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions
-    console.log("Cors options")
-    console.log(corsOptions, req.header('Origin'))
     if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
-        req.header('Access-Control-Allow-Origin', req.header('Origin'))
     } else {
         corsOptions = { origin: false } // disable CORS for this request
     }
@@ -43,14 +34,11 @@ var corsOptionsDelegate = function (req, callback) {
 const app = express()
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
-app.use('*', cors(corsOptionsDelegate), (req, res) => {
-    res.status(200)
-})
 
-
+<<<<<<< HEAD
 // Production mode
     app.use(function (req, res, next) {
-        res.header('Access-Control-Allow-Origin', '*')
+        res.header('Access-Control-Allow-Origin', 'trainpreddict.fr')
         res.header(
             'Access-Control-Headers',
             'Origin, X-Requested-With, Content-Type, Accept'
@@ -74,9 +62,11 @@ app.use('*', cors(corsOptionsDelegate), (req, res) => {
         ca: ca,
     }
 
-    const httpsServer = https.createServer(credentials, app).listen(6002)
+    const httpsServer = https.createServer(credentials, app).listen(6001)
 
 
+=======
+>>>>>>> 21ca996c7daee981e26defd441c6e433c8d1b313
 /*
  * ROUTER *
  */
@@ -176,3 +166,8 @@ app.use(
     require('./routes/assistants/utilisateur')
 )
 
+<<<<<<< HEAD
+if (process.env.NODE_ENV != 'development') {
+  
+const PORT = process.env.NODE_PORT
+app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`))
