@@ -6,7 +6,7 @@
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,json}\"",
     "dev": "nodemon index",
-    "start": "pm2-runtime start ecosystem.config.js --env production",
+    "start": "node index.js",
     "test": "node server.test.js"
   },
   "author": "Areatomic",
