@@ -2,12 +2,12 @@
 const express = require('express')
 const router = express.Router()
 //* MICROSERVICES *//
+const OrganismeRoutes = require('./organisme')
+const AffiliationRoutes = require('./affiliation')
 
 //* ROUTES *//
-router.use('/affiliation', (req, res) => {
-    // TODO: Create and link affiliation routers
-    return res.status(200).json({ message: 'Routers of affiliation' })
-})
+router.use('/organisme', OrganismeRoutes)
+router.use('/affiliation', AffiliationRoutes)
 router.use('/calendrier', (req, res) => {
     // TODO: Create and link calendrier routers
     return res.status(200).json({ message: 'Routers of calendrier' })
