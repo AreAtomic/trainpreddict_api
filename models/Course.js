@@ -9,9 +9,9 @@ const CourseSchema = new Schema({
     },
 
     // Connexion avec le jour
-    _day: {
-        type: Schema.Types.ObjectId,
-        ref: 'Day',
+    date: {
+        type: String,
+        required: true,
     },
 
     // Description de la course
@@ -26,6 +26,7 @@ const CourseSchema = new Schema({
             'Road trip',
             'Distance',
             'Montagne',
+            'VTT'
         ],
         default: 'Vallon',
     },
@@ -48,10 +49,6 @@ const CourseSchema = new Schema({
     temps: {
         type: String,
         required: true,
-    },
-    realise: {
-        type: Boolean,
-        default: false,
     },
     sse: {
         type: Number,

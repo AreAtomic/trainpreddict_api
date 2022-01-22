@@ -11,6 +11,9 @@ const mongoose = require('mongoose')
 
 const connectDB = async () => {
     try {
+        Object.keys(mongoose.connection.models).forEach((key) => {
+            delete mongoose.connection.models[key]
+        })
         await mongoose.connect(process.env.DATABASE, {
             useNewUrlParser: true,
             useUnifiedTopology: true,

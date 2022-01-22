@@ -4,14 +4,12 @@ const router = express.Router()
 //* MICROSERVICES *//
 const OrganismeRoutes = require('./organisme')
 const AffiliationRoutes = require('./affiliation')
+const CalendrierRoutes = require('./calendrier')
 
 //* ROUTES *//
 router.use('/organisme', OrganismeRoutes)
 router.use('/affiliation', AffiliationRoutes)
-router.use('/calendrier', (req, res) => {
-    // TODO: Create and link calendrier routers
-    return res.status(200).json({ message: 'Routers of calendrier' })
-})
+router.use('/calendrier', CalendrierRoutes)
 router.use('/config', (req, res) => {
     // TODO: Create and link config routers
     return res.status(200).json({ message: 'Routers of config' })
