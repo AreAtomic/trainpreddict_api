@@ -308,12 +308,11 @@ exports.linkCoureur = async (req, res) => {
 /**
  * @route GET /api/v1/assistant/affiliation/coureur
  * @function getCoureur
- * @description Récupère toutes les informations d'un coureur affilié : calendrier, objectifs, entrainements, profil
+ * @description Récupère toutes le profil d'un coureur affilié : profil, infosups, donneesUtilisateur
  */
 exports.getCoureur = async (req, res) => {
     try {
         const userId = req.params.userId
-        console.log(userId)
         const utilisateur = await Utilisateur.findOne(
             { _id: userId },
             '-mot_de_passe'
