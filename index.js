@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const connectDB = require('./config/db')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
@@ -14,7 +15,7 @@ app.listen(process.env.PORT, () => {
 })
 app.use(express.json({ extended: false }))
 // CORS
-
+app.use(cors())
 //Database
 connectDB()
 
