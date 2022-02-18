@@ -5,6 +5,8 @@ const router = express.Router()
 const OrganismeRoutes = require('./organisme')
 const AffiliationRoutes = require('./affiliation')
 const CalendrierRoutes = require('./calendrier')
+const EntrainementRoutes = require('./entrainement')
+const ObjectifRoutes = require('./objectif')
 
 //* ROUTES *//
 router.use('/organisme', OrganismeRoutes)
@@ -18,14 +20,8 @@ router.use('/courses', (req, res) => {
     // TODO: Create and link courses routers
     return res.status(200).json({ message: 'Routers of courses' })
 })
-router.use('/entrainement', (req, res) => {
-    // TODO: Create and link entrainement routers
-    return res.status(200).json({ message: 'Routers of entrainement' })
-})
-router.use('/objectif', (req, res) => {
-    // TODO: Create and link objectif routers
-    return res.status(200).json({ message: 'Routers of objectif' })
-})
+router.use('/entrainement', EntrainementRoutes)
+router.use('/objectif', ObjectifRoutes)
 router.use('/profil', (req, res) => {
     // TODO: Create and link profil routers
     return res.status(200).json({ message: 'Routers of profil' })

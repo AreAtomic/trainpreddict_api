@@ -205,6 +205,7 @@ exports.createCalendrier = async (req, res) => {
  */
 exports.getDayCalendrier = async (req, res) => {
     try {
+        console.log("Call")
         const userId = req.params.userId
         let date = req.params.date
         let year = parseInt(date.split('-')[0])
