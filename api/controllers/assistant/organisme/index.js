@@ -53,7 +53,7 @@ exports.createOrganisme = async (req, res) => {
 
         let mailOptions = {
             from: 'support@trainpreddict.fr',
-            to: 'contact@trainpreddict.fr',
+            to: email,
             subject: 'Bienvenue chez TrainPreddict',
             text: `
     TrainPreddict, l'entrainement de haut niveau en un clic.
@@ -175,7 +175,7 @@ exports.createOrganisme = async (req, res) => {
 
         return res
             .status(200)
-            .json({ msg: 'Structure créée avec succés', data: user })
+            .json({ message: 'Inscription réussie, un email vous a été envoyé.'})
     } catch (e) {
         console.log(e)
         return res.status(200).json({

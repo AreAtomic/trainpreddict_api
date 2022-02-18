@@ -44,12 +44,15 @@ exports.login = async (req, res) => {
 
         return res.status(200).json({
             data: {
-                nom: utilisateur.nom,
-                prenom: utilisateur.prenom,
+                nom: `${utilisateur.nom}${
+                    utilisateur.prenom ? ` ${utilisateur.prenom}` : ''
+                }`,
+                id: utilisateur._id,
                 token: utilisateur.token,
+                profil: info,
                 firstLogged: info == null && profil == null,
             },
-            msg: `Connexion réussie, bonjour ${
+            message: `Connexion réussie, bonjour ${
                 utilisateur.prenom !== undefined
                     ? utilisateur.prenom
                     : utilisateur.nom
