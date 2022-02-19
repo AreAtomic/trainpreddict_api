@@ -205,7 +205,7 @@ exports.createCalendrier = async (req, res) => {
  */
 exports.getDayCalendrier = async (req, res) => {
     try {
-        console.log("Call")
+        console.log('Call')
         const userId = req.params.userId
         let date = req.params.date
         let year = parseInt(date.split('-')[0])
@@ -711,7 +711,7 @@ exports.putDayCalendrierDone = async (req, res) => {
 /**
  * @route PUT /api/v1/assistant/calendrier/:userId/comment/:dayId
  * @function putDayCalendrierComment
- * @description //TODO: Modification du paramètre comment d'un calendrier pour un jour pour un coureur avec son id
+ * @description Modification du paramètre comment d'un calendrier pour un jour pour un coureur avec son id
  * @utilisation Supression et ajout des commentaires gérés au niveau du front et envoie d'un array
  * @params comment = [...Avec les nouveau ou sans les ancien] de la forme {from: "Nom", value: "Comment"}
  */
@@ -756,7 +756,7 @@ exports.putDayCalendrierComment = async (req, res) => {
 /**
  * @route PUT /api/v1/assistant/calendrier/:userId/course/:dayId
  * @function putDayCalendrierCourse
- * @description //TODO: Modification du paramètre course d'un calendrier pour un jour pour un coureur avec son id
+ * @description Modification du paramètre course d'un calendrier pour un jour pour un coureur avec son id
  */
 exports.putDayCalendrierCourse = async (req, res) => {
     try {
@@ -770,12 +770,12 @@ exports.putDayCalendrierCourse = async (req, res) => {
         const course = await Course.findOneAndUpdate(
             {
                 _utilisateur: userId,
-                date: date,
+                titre: titre,
             },
             {
                 $set: {
+                    date,
                     type,
-                    titre,
                     description,
                     denivele,
                     distance,
@@ -957,7 +957,7 @@ exports.putDayCalendrierCourse = async (req, res) => {
 /**
  * @route PUT /api/v1/assistant/calendrier/:userId/objectif/:dayId
  * @function putDayCalendrierObjectif
- * @description //TODO: Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
+ * @description Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
  */
 exports.putDayCalendrierObjectif = async (req, res) => {
     try {
@@ -1163,13 +1163,112 @@ exports.putDayCalendrierObjectif = async (req, res) => {
 }
 
 /**
- * @route PUT /api/v1/assistant/calendrier/:userId/form/:year
- * @function putForm
- * @description //TODO: Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
+ * @route PUT /api/v1/assistant/calendrier/:userId/indicators/:date
+ * @function putIndicators
+ * @description Modification des paramètres form, tiredness for a specific day
  */
+exports.putIndicators = async (req, res) => {
+    try {
+        const userId = req.params.userId
+        const date = req.params.date
+        const plan = await Assistant.findOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                years: {
+                    $elemMatch: { year: dayjs(date).year() },
+                },
+            }
+        )
 
-/**
- * @route PUT /api/v1/assistant/calendrier/:userId/tiredness/:year
- * @function putTiredness
- * @description //TODO: Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
- */
+        let numberOfDay = 0
+        // Planned
+        let tirednessPlanned = 0
+        let formPlanned = 0
+        let tirednessPlannedToRemove = 0
+        let formPlannedToRemove
+        // Done
+        let tirednessDone = 0
+        let formDone = 0
+        let tirednessDoneToRemove = 0
+        let formDoneToRemove
+
+        const year = plan.years[0]
+        year.weeks.forEach((week) => {
+            week.days.forEach((day) => {
+                // Calcul fatigue
+                tirednessPlanned = parseInt(
+                    (tirednessPlanned -
+                        (numberOfDay >= 7 ? tirednessPlannedToRemove : 0) +
+                        day.statistiques.planned.sse) /
+                        7
+                )
+                if (numberOfDay % 7 === 0) {
+                    tirednessPlannedToRemove = day.statistiques.planned.sse
+                }
+                tirednessDone = parseInt(
+                    (tirednessDone -
+                        (numberOfDay >= 7 ? tirednessDoneToRemove : 0) +
+                        day.statistiques.done.sse) /
+                        7
+                )
+                if (numberOfDay % 7 === 0) {
+                    tirednessDoneToRemove = day.statistiques.done.sse
+                }
+
+                // Calcul forme
+                formPlanned = parseInt(
+                    (formPlanned -
+                        (numberOfDay >= 42 ? tirednessPlannedToRemove : 0) +
+                        day.statistiques.planned.sse) /
+                        42
+                )
+                if (numberOfDay % 42 === 0) {
+                    formPlannedToRemove = day.statistiques.planned.sse
+                }
+                formDone = parseInt(
+                    (formDone -
+                        (numberOfDay >= 42 ? formDoneToRemove : 0) +
+                        day.statistiques.done.sse) /
+                        42
+                )
+                if (numberOfDay % 7 === 0) {
+                    formDoneToRemove = day.statistiques.done.sse
+                }
+
+                numberOfDay += 1
+                day.form.planned = formPlanned
+                day.tiredness.planned = tirednessPlanned
+                day.form.done = formDone
+                day.tiredness.done = tirednessDone
+            })
+        })
+
+        const planUpdated = await Assistant.findOneAndUpdate(
+            {
+                _utilisateur: userId,
+            },
+            {
+                $set: {
+                    'years.$[years]': year,
+                },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'years.year': dayjs(date).year(),
+                    },
+                ],
+            }
+        )
+
+        return res.status(200).json({ message: 'Courbes updated' })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est survenue, veuillez réessayer plus tard.',
+        })
+    }
+}

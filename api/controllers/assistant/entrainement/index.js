@@ -6,7 +6,7 @@ const Seance = require('../../../../models/Seance')
 /**
  * @route GET /api/v1/assistant/entrainement/
  * @function getAllEntrainements
- * @description //TODO: Récupération de tous les entrainements créé par l'utilisateur
+ * @description Récupération de tous les entrainements créé par l'utilisateur
  */
 exports.getAllEntrainements = async (req, res) => {
     try {

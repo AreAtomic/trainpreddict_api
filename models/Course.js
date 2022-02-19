@@ -7,6 +7,10 @@ const CourseSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Utilisateur',
     },
+    _organisme: {
+        type: Schema.Types.ObjectId,
+        ref: 'Utilisateur',
+    },
 
     // Connexion avec le jour
     date: {

@@ -38,5 +38,10 @@ router.put(
     [jwtauth],
     CalendrierController.putDayCalendrierObjectif
 )
+router.put(
+    '/:userId/indicators/:date',
+    [jwtauth],
+    CalendrierController.putIndicators
+)
 
 module.exports = router

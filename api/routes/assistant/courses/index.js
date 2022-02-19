@@ -5,6 +5,8 @@ const { jwtauth } = require('../../../../middlewares/auth.middleware')
 //* MICROSERVICES *//
 const CourseController = require('../../../controllers/assistant/courses')
 
-router.get('/:userId', [jwtauth], CourseController.getCourses)
+router.get('/:userId', [jwtauth], CourseController.getCoursesUser)
+router.put('/', [jwtauth], CourseController.putCourses)
+router.get('/', [jwtauth], CourseController.getCoursesOrganisme)
 
 module.exports = router

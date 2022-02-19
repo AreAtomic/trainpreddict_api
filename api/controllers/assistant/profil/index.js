@@ -1,15 +1,103 @@
 //* MODULES *//
 
 //* MODELS *//
+const Profil = require('../../../../models/Profil')
+const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
 
 /**
  * @route GET /api/v1/assistant/profil/:userId
  * @function getProfil
- * @description //TODO: Récupération d'un profil avec le userId
+ * @description Récupération d'un profil avec le userId
  */
+exports.getProfile = async (req, res) => {
+    try {
+        const utilisateur = req.params.userId
+        const profil = await Profil.findOne({ _utilisateur: utilisateur })
+        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+            _utilisateur: utilisateur,
+        })
+
+        return res.status(200).json({
+            message: 'Profil récupéré avec succès',
+            data: {
+                profil: {
+                    ...profil,
+                    ...donneesUtilisateur,
+                },
+            },
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est servenue, veuillez réessayer plus tard.',
+        })
+    }
+}
 
 /**
  * @route PUT /api/v1/assistant/profil/:userId
  * @function putProfil
- * @description //TODO: Modification d'un profil avec le userId
+ * @description Modification d'un profil avec le userId
  */
+exports.putProfile = async (req, res) => {
+    try {
+        const {
+            sse,
+            experience,
+            heure_sommeil,
+            temps_recup_max,
+            nombre_heure_semaine,
+            nombre_seance_semaine,
+            musculation,
+            ppg,
+            etirement,
+            foncier,
+            style,
+            point_faible,
+            jours_repos,
+            fcfs,
+            pfs,
+            poids,
+            age,
+        } = req.body
+
+        const donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
+            { _utilisateur: req.utilisateur._id },
+            {
+                $set: {
+                    sse: sse,
+                    experience: experience,
+                    heure_sommeil: heure_sommeil,
+                    temps_recup_max: temps_recup_max,
+                    nombre_heure_semaine: nombre_heure_semaine,
+                    nombre_seance_semaine: nombre_seance_semaine,
+                    musculation: musculation,
+                    ppg: ppg,
+                    etirement: etirement,
+                    foncier: foncier,
+                    style: style,
+                    point_faible: point_faible,
+                    jours_repos: jours_repos,
+                },
+            },
+            { new: true, upsert: true }
+        )
+
+        const profil = await Profil.findOneAndUpdate(
+            { _utilisateur: req.utilisateur._id },
+            { $set: { fcfs, pfs, age, poids } },
+            { new: true, upsert: true }
+        )
+
+        return res.status(200).json({
+            message: 'Profil modifié avec succès',
+            data: {
+                profil: {
+                    ...profil,
+                    ...donneesUtilisateur,
+                },
+            },
+        })
+    } catch (error) {}
+}
