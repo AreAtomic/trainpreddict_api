@@ -44,14 +44,6 @@ const AssistantSchema = new Schema({
                             nombreSeance: { type: Number, required: true },
                         },
                     },
-                    form: {
-                        planned: { type: Number, required: true },
-                        done: { type: Number, required: true },
-                    },
-                    tiredness: {
-                        planned: { type: Number, required: true },
-                        done: { type: Number, required: true },
-                    },
                     days: [
                         {
                             date: { type: String, required: true },

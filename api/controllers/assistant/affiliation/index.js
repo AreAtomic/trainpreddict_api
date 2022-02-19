@@ -10,6 +10,7 @@ const Utilisateur = require('../../../../models/Utilisateur')
 const InfoSup = require('../../../../models/InfoSup')
 const Profil = require('../../../../models/Profil')
 const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
+const Objectif = require('../../../../models/Objectif')
 
 /**
  * @route POST /api/v1/assistant/affiliation/coureur/new
@@ -319,7 +320,9 @@ exports.getCoureur = async (req, res) => {
         )
         const profil = await Profil.findOne({ _utilisateur: userId })
         const infosup = await InfoSup.findOne({ _utilisateur: userId })
-        const donneesUtilisateur = await DonneesUtilisateur.findOne({ _utilisateur: userId })
+        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+            _utilisateur: userId,
+        })
         return res.status(200).json({
             message: 'Utilisateur récupéré avec succès',
             data: { utilisateur, infosup, profil, donneesUtilisateur },
@@ -355,13 +358,46 @@ exports.getCoureurs = async (req, res) => {
         if (req.utilisateur.type === 'Admin') {
             utilisateurs = await Utilisateur.find({ type: 'Coureur' })
         }
-        return res.status(200).json({
-            data: { utilisateurs },
-            msg: 'Comptes affiliés récupérés',
+        let data = []
+        utilisateurs.forEach(async (utilisateur, index) => {
+            const nextObjectif = await Objectif.findOne({
+                _utilisateur: utilisateur._id,
+            })
+            const infoSup = await InfoSup.findOne({
+                _utilisateur: utilisateur._id,
+            })
+            const next_objectif = nextObjectif
+            ? {
+                date: nextObjectif.date,
+                titre: nextObjectif.titre,
+            }
+            : "Pas d'objectif"
+
+            data.push({
+                _id: utilisateur._id,
+                nom: utilisateur.nom,
+                prenom: utilisateur.prenom,
+                email: utilisateur.email,
+                type: utilisateur.type,
+                categorie: infoSup?.categorie,
+                next_objectif: next_objectif,
+            })
+            if (index === utilisateurs.length - 1) {
+                return res.status(200).json({
+                    data: data,
+                    message: 'Comptes affiliés récupérés',
+                })
+            }
         })
+        if (utilisateurs.length === 0) {
+            return res.status(200).json({
+                data: data,
+                message: 'Comptes affiliés récupérés',
+            })
+        }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ error: 'Une erreur serveur est survenue' })
     }
 }
