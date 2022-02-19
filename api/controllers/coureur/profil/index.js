@@ -5,13 +5,13 @@ const Profil = require('../../../../models/Profil')
 const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
 
 /**
- * @route GET /api/v1/assistant/profil/:userId
+ * @route GET /api/v1/coureur/profil
  * @function getProfil
  * @description Récupération d'un profil avec le userId
  */
 exports.getProfile = async (req, res) => {
     try {
-        const utilisateur = req.params.userId
+        const utilisateur = req.utilisateur._id
         const profil = await Profil.findOne({ _utilisateur: utilisateur })
         const donneesUtilisateur = await DonneesUtilisateur.findOne({
             _utilisateur: utilisateur,
@@ -53,7 +53,7 @@ exports.getProfile = async (req, res) => {
 }
 
 /**
- * @route PUT /api/v1/assistant/profil/:userId
+ * @route PUT /api/v1/coureur/profil
  * @function putProfil
  * @description Modification d'un profil avec le userId
  */
@@ -80,7 +80,7 @@ exports.putProfile = async (req, res) => {
         } = req.body
 
         const donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
+            { _utilisateur: req.utilisateur._id },
             {
                 $set: {
                     sse: sse,
@@ -102,7 +102,7 @@ exports.putProfile = async (req, res) => {
         )
 
         const profil = await Profil.findOneAndUpdate(
-            { _utilisateur: req.params.userId },
+            { _utilisateur: req.utilisateur._id },
             { $set: { fcfs, pfs, age, poids } },
             { new: true, upsert: true }
         )

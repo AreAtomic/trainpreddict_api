@@ -3,9 +3,10 @@ const express = require('express')
 const router = express.Router()
 const { jwtauth } = require('../../../../middlewares/auth.middleware')
 //* MICROSERVICES *//
-const ObjectifController = require('../../../controllers/assistant/objectif')
+const ProfilController = require('../../../controllers/coureur/profil')
 
 //* ROUTES *//
-router.get('/:userId', [jwtauth], ObjectifController.getAllObjectifs)
+router.get('/', [jwtauth], ProfilController.getProfile)
+router.put('/', [jwtauth], ProfilController.putProfile)
 
 module.exports = router

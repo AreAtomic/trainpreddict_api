@@ -14,8 +14,8 @@ app.listen(process.env.PORT, () => {
     console.log(`API is running on ${process.env.SERVER_URL}`)
 })
 app.use(express.json({ extended: false }))
-// CORS
-app.use(cors())
+app.use(fileUpload())
+app.use(cors()) 
 //Database
 connectDB()
 
