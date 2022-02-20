@@ -10,7 +10,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 let corsOptions = {
     origin: process.env.APP_URL,
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+    optionsSuccessStatus: 204
   }
 //Serveur
 const app = express()
@@ -19,7 +19,7 @@ app.listen(process.env.PORT, () => {
 })
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
-app.use(cors())
+app.use(cors(corsOptions))
 //Database 
 connectDB()
 
