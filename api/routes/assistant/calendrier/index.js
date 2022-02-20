@@ -13,6 +13,11 @@ router.get(
     [jwtauth],
     CalendrierController.getDayCalendrier
 )
+router.get(
+    '/:userId/planned/object/:seanceId',
+    [jwtauth],
+    CalendrierController.getDayPlannedObject
+)
 router.put(
     '/:userId/planned/:date',
     [jwtauth],

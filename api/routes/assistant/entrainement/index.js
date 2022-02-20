@@ -7,6 +7,6 @@ const EntrainementController = require('../../../controllers/assistant/entrainem
 
 //* ROUTES *//
 router.get('/:userId', [jwtauth], EntrainementController.getAllEntrainements)
-router.get('/:entrainementId/analyse', [jwtauth], EntrainementController.getEntrainement)
+router.get('/:entrainementId/analyse', [jwtauth], EntrainementController.getEntrainementUser)
 
 module.exports = router
