@@ -55,6 +55,7 @@ exports.getProfile = async (req, res) => {
  */
 exports.putProfile = async (req, res) => {
     try {
+        console.log('Profile update')
         const {
             sse,
             experience,
@@ -103,6 +104,8 @@ exports.putProfile = async (req, res) => {
             { new: true, upsert: true }
         )
 
+        console.log('Update')
+
         return res.status(200).json({
             message: 'Profil modifié avec succès',
             data: {
@@ -125,5 +128,13 @@ exports.putProfile = async (req, res) => {
                 jours_repos: donneesUtilisateur.jours_repos,
             },
         })
-    } catch (error) {}
+    } catch (error) {
+        console.log(error)
+        return res
+            .status(500)
+            .json({
+                error: 'An error occcured, please try again later',
+                message: error.message,
+            })
+    }
 }

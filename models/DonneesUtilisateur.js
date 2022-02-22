@@ -37,7 +37,6 @@ const DonneesUtilisateurSchema = new Schema({
         required: true,
     },
     jours_repos: [
-        
         {
             type: String,
             enum: [
@@ -68,7 +67,7 @@ const DonneesUtilisateurSchema = new Schema({
     },
     foncier: {
         type: String,
-        enum: ['Force', 'Vélocité', 'Pignon fixe'],
+        enum: ['Force', 'Vélocité', 'Pignon fixe', 'Peu importe'],
         required: true,
     },
     style: {

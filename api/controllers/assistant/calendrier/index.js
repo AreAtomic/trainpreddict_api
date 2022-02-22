@@ -970,10 +970,11 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             denivele,
             distance,
             temps,
-            sse,
         } = req.body
         const userId = req.params.userId
         const date = req.params.date
+        const sse = parseInt(temps.split(':')[0]) * 100 +
+        parseInt(temps.split(':')[1]) * 1.67
 
         const objectif = await Objectif.findOneAndUpdate(
             {
