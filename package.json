@@ -12,6 +12,7 @@
   "author": "Areatomic",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
     "concurrently": "^7.0.0",

@@ -4,6 +4,7 @@ const hasher = 10
 const nodemailer = require('nodemailer')
 const dayjs = require('dayjs')
 const utils = require('../utils')
+const axios = require('axios')
 
 //* MODELS *//
 const Utilisateur = require('../../../../models/Utilisateur')
@@ -45,7 +46,6 @@ exports.createCoureur = async (req, res) => {
                         dayjs(naissance).toISOString() ==
                             dayjs(infosup.naissance).toISOString() &&
                         adresse == infosup.adresse &&
-                        decouverte == infosup.decouverte &&
                         categorie == infosup.categorie &&
                         telephone == infosup.telephone
                     ) {
@@ -270,12 +270,20 @@ exports.createCoureur = async (req, res) => {
         })
 
         res.status(200).json({
-            data: { utilisateur },
+            data: {
+                utilisateur: {
+                    _id: utilisateur._id,
+                    email: utilisateur.email,
+                    name: `${utilisateur.prenom} ${utilisateur.nom}`,
+                    isLogged: true,
+                    firstLogged: true,
+                },
+            },
             msg: 'Compte créé avec succès',
         })
     } catch (e) {
-        console.log(e)
-        res.status(200).json({ error: 'Erreur serveur' })
+        console.log('Catch', e)
+        res.status(500).json({ error: 'Erreur serveur' })
     }
 }
 
@@ -367,11 +375,11 @@ exports.getCoureurs = async (req, res) => {
                 _utilisateur: utilisateur._id,
             })
             const next_objectif = nextObjectif
-            ? {
-                date: nextObjectif.date,
-                titre: nextObjectif.titre,
-            }
-            : "Pas d'objectif"
+                ? {
+                      date: nextObjectif.date,
+                      titre: nextObjectif.titre,
+                  }
+                : "Pas d'objectif"
 
             data.push({
                 _id: utilisateur._id,
