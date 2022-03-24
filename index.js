@@ -19,6 +19,7 @@ app.listen(process.env.PORT, () => {
 })
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
+console.log(cors(corsOptions))
 app.use(cors(corsOptions))
 //Database 
 connectDB()
