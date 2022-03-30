@@ -14,12 +14,12 @@ let corsOptions = {
   }
 //Serveur
 const app = express()
+app.options('*', cors(corsOptions))
 app.listen(process.env.PORT, () => {
     console.log(`API is running on ${process.env.SERVER_URL}`)
 })
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
-console.log(cors(corsOptions))
 app.use(cors(corsOptions))
 //Database 
 connectDB()
