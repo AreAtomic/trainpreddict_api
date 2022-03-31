@@ -178,17 +178,15 @@ exports.createCalendrier = async (req, res) => {
             }
             years.push(year)
         }
-        assistant = await Assistant.findOneAndUpdate(
+        await Assistant.findOneAndUpdate(
             {
                 _utilisateur: userId,
             },
             { $set: { years: years } },
             { new: true, upsert: true }
         )
-        assistant.save()
         return res.status(200).json({
             message: 'Assistant created successfully',
-            data: { assistant },
         })
     } catch (error) {
         console.log(error)
