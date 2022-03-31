@@ -89,7 +89,7 @@ exports.createCalendrier = async (req, res) => {
         }
 
         let years = []
-        for (let y = 2000; y < 2100; y++) {
+        for (let y = 2020; y < 2023; y++) {
             // Variables for weeks
             let weeks = []
             let numberOfWeek = dayjs(
