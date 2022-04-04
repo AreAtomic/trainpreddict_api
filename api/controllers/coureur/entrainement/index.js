@@ -1,4 +1,5 @@
 //* MODULES *//
+const dayjs = require('dayjs')
 const FitParser = require('fit-file-parser').default
 // Create a FitParser instance (options argument is optional)
 let fitParser = new FitParser({
@@ -12,6 +13,8 @@ let fitParser = new FitParser({
 
 //* MODELS *//
 const Seance = require('../../../../models/Seance')
+const Profil = require('../../../../models/Profil')
+const Entrainement = require('../../../../models/Entrainement')
 
 /**
  * @route GET /api/v1/assistant/entrainement/
@@ -66,6 +69,7 @@ exports.createEntrainementFromFile = async (req, res) => {
     // Récupération du profil
     const user = req.utilisateur._id
     const profil = await Profil.findOne({ _utilisateur: user })
+    console.log(req.headers)
     // Vérification
     if (!req.files || Object.keys(req.files).length === 0) {
         return res
@@ -127,6 +131,12 @@ exports.createEntrainementFromFile = async (req, res) => {
                 })
             }
 
+            let n10_power = []
+            let n10_fc = []
+            let n30_power = []
+            let n30_fc = []
+            let n10_zone = []
+            let n30_zone = []
             // Cas juste puissance
             if (fc_moy == 0 || fc_moy == undefined) {
                 // Calcul
@@ -259,8 +269,8 @@ exports.createEntrainementFromFile = async (req, res) => {
                 }
 
                 // Zones à 10s
-                let n10_zone = []
-                let n10_power = []
+                n10_zone = []
+                n10_power = []
                 for (let i = 0; i < detailed_seconds.length; i += 10) {
                     let sum_power = 0
                     for (
@@ -280,7 +290,7 @@ exports.createEntrainementFromFile = async (req, res) => {
                 }
 
                 // Zones à 30s
-                let n30_zone = []
+                n30_zone = []
                 n30_power = []
                 for (let i = 0; i < detailed_seconds.length; i += 30) {
                     let sum_power = 0
@@ -522,8 +532,8 @@ exports.createEntrainementFromFile = async (req, res) => {
                 }
 
                 // Zones à 10s
-                let n10_zone = []
-                let n10_fc = []
+                n10_zone = []
+                n10_fc = []
                 for (let i = 0; i < detailed_seconds.length; i += 10) {
                     let sum_fc = 0
                     for (
@@ -856,7 +866,7 @@ exports.createEntrainementFromFile = async (req, res) => {
             }
 
             // Normalisation à 10s
-            let n10_zone = []
+            n10_zone = []
             n10_fc = []
             n10_power = []
             for (let i = 0; i < detailed_seconds.length; i += 10) {
@@ -882,7 +892,7 @@ exports.createEntrainementFromFile = async (req, res) => {
             }
 
             // Normalisation à 30s
-            let n30_zone = []
+            n30_zone = []
             n30_fc = []
             n30_power = []
             for (let i = 0; i < detailed_seconds.length; i += 30) {
@@ -1038,3 +1048,77 @@ exports.createEntrainementFromFile = async (req, res) => {
  * @function putEntrainement
  * @description //TODO: Modification d'un entrainement
  */
+
+// CONVERTISSEURS
+// Convertisseurs
+let toHHMMSS = (secs) => {
+    let hours = Math.floor(secs / 3600)
+    let minutes = Math.floor(secs / 60) % 60
+    let seconds = secs % 60
+
+    if (hours) {
+        return `${hours > 9 ? hours : `0${hours}`}:${
+            minutes > 9 ? minutes : `0${minutes}`
+        }:${seconds > 9 ? seconds : `0${seconds}`}`
+    }
+
+    return `00:${minutes > 9 ? minutes : `0${minutes}`}:${
+        seconds > 9 ? seconds : `0${seconds}`
+    }`
+}
+
+let toKM = (val) => {
+    return parseFloat(Number.parseFloat(val).toPrecision(4))
+}
+
+let toDM = (val) => {
+    return Number.parseFloat(val).toPrecision(5) * 1000
+}
+
+// Calculs zones
+const fc_zone = (pfc) => {
+    if (pfc > 0.69) {
+        if (pfc > 0.85) {
+            if (pfc > 0.95) {
+                if (pfc > 1.05) {
+                    return 5
+                }
+                return 4
+            }
+            return 3
+        }
+        return 2
+    }
+    return 1
+}
+
+const power_zone = (pp) => {
+    if (pp > 0.56) {
+        if (pp > 0.76) {
+            if (pp > 0.91) {
+                if (pp > 1.06) {
+                    if (pp > 1.21) {
+                        if (pp > 1.5) {
+                            return 7
+                        }
+                        return 6
+                    }
+                    return 5
+                }
+                return 4
+            }
+            return 3
+        }
+        return 2
+    }
+    return 1
+}
+
+moyenneArray = (arr) => {
+    let nombres = arr.length,
+        valeurs = 0
+    for (let i = 0; i < nombres; i++) {
+        valeurs += Number(arr[i])
+    }
+    return parseInt(valeurs / nombres)
+}
