@@ -10,6 +10,7 @@ dayjs.extend(weekOfYear)
 
 //* MODELS *//
 const Assistant = require('../../../../models/Assistant')
+const Seance = require('../../../../models/Seance')
 const Course = require('../../../../models/Course')
 const Objectif = require('../../../../models/Objectif')
 
@@ -1265,6 +1266,30 @@ exports.putIndicators = async (req, res) => {
         return res.status(200).json({ message: 'Courbes updated' })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est survenue, veuillez réessayer plus tard.',
+        })
+    }
+}
+
+exports.getDayPlannedObject = async (req, res) => {
+    try {
+        console.log('Get object')
+        const seanceId = req.params.seanceId
+        let data = await Seance.findOne({ _id: seanceId })
+        if (!data) {
+            data = await Course.findOne({ _id: seanceId })
+            if (!data) {
+                return res.status(404).json({
+                    message: `No seance or course find with the id : ${seanceId}`,
+                    error: 'No data found',
+                })
+            }
+        }
+        return res.status(200).json({ data: data, message: 'Seance fetch' })
+    } catch (error) {
+        console.log('DayPlannedObject error: ', error)
         return res.status(500).json({
             error: error.message,
             message: 'Une erreur est survenue, veuillez réessayer plus tard.',

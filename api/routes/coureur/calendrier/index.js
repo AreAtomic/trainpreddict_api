@@ -43,5 +43,11 @@ router.put(
     [jwtauth],
     CalendrierController.putIndicators
 )
+router.get(
+    '/planned/object/:seanceId',
+    [jwtauth],
+    CalendrierController.getDayPlannedObject
+)
+
 
 module.exports = router
