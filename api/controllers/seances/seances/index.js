@@ -112,7 +112,7 @@ exports.getSeanceByType = async (req, res) => {
  */
 exports.getAllSeance = async (req, res) => {
     try {
-        console.log("Get seances")
+        console.log('Get seances')
         const seances = await Seance.find({})
         return res.status(200).json({
             data: seances,
