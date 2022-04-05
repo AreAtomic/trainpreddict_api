@@ -971,8 +971,9 @@ exports.putDayCalendrierObjectif = async (req, res) => {
         } = req.body
         const userId = req.params.userId
         const date = req.params.date
-        const sse = parseInt(temps.split(':')[0]) * 100 +
-        parseInt(temps.split(':')[1]) * 1.67
+        const sse =
+            parseInt(temps.split(':')[0]) * 100 +
+            parseInt(temps.split(':')[1]) * 1.67
 
         const objectif = await Objectif.findOneAndUpdate(
             {
@@ -1181,62 +1182,51 @@ exports.putIndicators = async (req, res) => {
             }
         )
 
-        let numberOfDay = 0
         // Planned
         let tirednessPlanned = 0
         let formPlanned = 0
-        let tirednessPlannedToRemove = 0
-        let formPlannedToRemove
+        let ssePlanned = []
         // Done
         let tirednessDone = 0
         let formDone = 0
-        let tirednessDoneToRemove = 0
-        let formDoneToRemove
+        let sseDone = []
 
         const year = plan.years[0]
         year.weeks.forEach((week) => {
             week.days.forEach((day) => {
+                ssePlanned.push(day.statistiques.planned.sse)
+                sseDone.push(day.statistiques.done.sse)
+                let length = ssePlanned.length
                 // Calcul fatigue
                 tirednessPlanned = parseInt(
-                    (tirednessPlanned -
-                        (numberOfDay >= 7 ? tirednessPlannedToRemove : 0) +
-                        day.statistiques.planned.sse) /
-                        7
+                    utils.moyenneArray(
+                        length > 7
+                            ? ssePlanned.slice(length - 7, length)
+                            : ssePlanned
+                    )
                 )
-                if (numberOfDay % 7 === 0) {
-                    tirednessPlannedToRemove = day.statistiques.planned.sse
-                }
                 tirednessDone = parseInt(
-                    (tirednessDone -
-                        (numberOfDay >= 7 ? tirednessDoneToRemove : 0) +
-                        day.statistiques.done.sse) /
-                        7
+                    utils.moyenneArray(
+                        length > 7 ? sseDone.slice(length - 7, length) : sseDone
+                    )
                 )
-                if (numberOfDay % 7 === 0) {
-                    tirednessDoneToRemove = day.statistiques.done.sse
-                }
 
                 // Calcul forme
                 formPlanned = parseInt(
-                    (formPlanned -
-                        (numberOfDay >= 42 ? tirednessPlannedToRemove : 0) +
-                        day.statistiques.planned.sse) /
-                        42
+                    utils.moyenneArray(
+                        length > 42
+                            ? ssePlanned.slice(length - 42, length)
+                            : ssePlanned
+                    )
                 )
-                if (numberOfDay % 42 === 0) {
-                    formPlannedToRemove = day.statistiques.planned.sse
-                }
                 formDone = parseInt(
-                    (formDone -
-                        (numberOfDay >= 42 ? formDoneToRemove : 0) +
-                        day.statistiques.done.sse) /
-                        42
+                    utils.moyenneArray(
+                        length > 42
+                            ? sseDone.slice(length - 42, length)
+                            : sseDone
+                    )
                 )
-                if (numberOfDay % 7 === 0) {
-                    formDoneToRemove = day.statistiques.done.sse
-                }
 
-                numberOfDay += 1
                 day.form.planned = formPlanned
                 day.tiredness.planned = tirednessPlanned
                 day.form.done = formDone
@@ -1244,7 +1234,7 @@ exports.putIndicators = async (req, res) => {
             })
         })
 
-        const planUpdated = await Assistant.findOneAndUpdate(
+        await Assistant.findOneAndUpdate(
             {
                 _utilisateur: userId,
             },
@@ -1262,7 +1252,9 @@ exports.putIndicators = async (req, res) => {
             }
         )
 
-        return res.status(200).json({ message: 'Courbes updated' })
+        return res
+            .status(200)
+            .json({ message: 'Courbes updated', actualYear: year })
     } catch (error) {
         console.log(error)
         return res.status(500).json({

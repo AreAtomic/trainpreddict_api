@@ -9,7 +9,7 @@ const AffiliationController = require('../../../controllers/assistant/affiliatio
 router.post('/coureur/new', [jwtauth], AffiliationController.createCoureur)
 router.post('/coureur', [jwtauth], AffiliationController.linkCoureur)
 router.get('/coureur/:userId', [jwtauth], AffiliationController.getCoureur)
-router.get('/coureurs', [jwtauth], AffiliationController.getCoureurs)
+router.get('/coureurs/club', [jwtauth], AffiliationController.getCoureurs)
 router.get('/coureurs/search', [jwtauth], AffiliationController.searchCoureurs)
 
 module.exports = router

@@ -14,7 +14,7 @@ let corsOptions = {
   }
 //Serveur
 const app = express()
-app.options('*', cors(corsOptions))
+app.use('*', cors(corsOptions))
 app.listen(process.env.PORT, () => {
     console.log(`API is running on ${process.env.SERVER_URL}`)
 })
