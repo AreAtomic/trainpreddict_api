@@ -13,3 +13,4 @@ router.get('/coureurs/club', [jwtauth], AffiliationController.getCoureurs)
 router.get('/coureurs/search', [jwtauth], AffiliationController.searchCoureurs)
 
 module.exports = router
+
