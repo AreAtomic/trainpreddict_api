@@ -138,7 +138,7 @@ exports.createCoureur = async (req, res) => {
  
  ${structure.nom}
  
- Pour vous accompagner, un guide de mise en œuvre est disponible ci-joint.
+ Vous pouvez trouver l'application au lien https://trainpreddict-dev.netlify.app.
 
  Votre mot de passe temporaire est : ${mdp_decrypt}
  Pensez à le changer le dès votre première connexion.
@@ -195,7 +195,7 @@ exports.createCoureur = async (req, res) => {
  ${structure.nom}
  </div>
  <div style="padding: 40px 15vw">
- Pour vous accompagner, un guide de mise en œuvre est disponible http://trainpreddict.fr/static/media/Guide.d2faf577.pdf.
+ Vous pouvez trouver l'application au lien https://trainpreddict-dev.netlify.app.
  <br /><br />
  Votre mot de passe temporaire est : ${mdp_decrypt}
  Pensez à le changer le dès votre première connexion.
@@ -249,7 +249,7 @@ exports.createCoureur = async (req, res) => {
        style="margin: 10px 15px 10px 0"
    /></a>
  
-   <a href="https://trainpreddict.aureliensebe.com/"
+   <a href="https://www.facebook.com/trainpreddict"
      ><img
        src="https://nsa40.casimages.com/img/2021/02/26/210226081350994354.png"
        width="40"

@@ -182,3 +182,46 @@ exports.resetPassword = async (req, res) => {
         }
     })
 }
+
+exports.changePassword = async (req, res) => {
+    try {
+        const { email, previousPassword, newPassword, newPasswordConfirm } =
+            req.body
+        const user = await Utilisateur.findOne({ email: email })
+
+        if (!user) {
+            return res
+                .status(404)
+                .json({ error: 'Aucun utilisateur avec cet email.' })
+        }
+
+        const isMatch = await bcrypt.compare(
+            previousPassword,
+            user.mot_de_passe
+        )
+
+        if (!isMatch) {
+            return res
+                .status(400)
+                .json({ error: "L'ancien mot de passe est incorrect." })
+        }
+        if (newPassword !== newPasswordConfirm) {
+            return res
+                .status(400)
+                .json({ error: 'Les mots de passe ne sont pas les mêmes.' })
+        }
+        const salt = await bcrypt.genSalt(hasher)
+
+        user.mot_de_passe = await bcrypt.hash(newPassword, salt)
+        user.save()
+        return res.status(200).json({
+            message: `Identifiant changé avec succès`,
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est survenue, veuillez réessayer plus tard',
+        })
+    }
+}
