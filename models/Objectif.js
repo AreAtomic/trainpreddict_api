@@ -26,6 +26,7 @@ const ObjectifSchema = new Schema({
             'Road trip',
             'Distance',
             'Montagne',
+            'Vallon'
         ],
         default: 'Vallon',
     },

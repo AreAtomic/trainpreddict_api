@@ -7,5 +7,6 @@ const ObjectifController = require('../../../controllers/assistant/objectif')
 
 //* ROUTES *//
 router.get('/:userId', [jwtauth], ObjectifController.getAllObjectifs)
+router.put('/:objectifId', [jwtauth], ObjectifController.editObjectif)
 
 module.exports = router
