@@ -1163,6 +1163,194 @@ exports.putDayCalendrierObjectif = async (req, res) => {
 }
 
 /**
+ * @route PUT /api/v1/assistant/calendrier/:userId/objectif/:dayId
+ * @function putDayCalendrierObjectif
+ * @description Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
+ */
+exports.deleteDayCalendrierObjectif = async (req, res) => {
+    try {
+        // Query informations
+        const {
+            denivele,
+            distance,
+            temps,
+        } = req.body
+        const userId = req.params.userId
+        const date = req.params.date
+        const sse =
+            parseInt(temps.split(':')[0]) * 100 +
+            parseInt(temps.split(':')[1]) * 1.67
+
+        const objectif = await Objectif.findOneAndDelete({
+            _utilisateur: userId,
+            date: date,
+        })
+
+        //* Comment modif *//
+        await Assistant.updateOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                $pull: {
+                    'years.$[].weeks.$[].days.$[days].objectif': objectif._id,
+                },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'days.date': date,
+                    },
+                ],
+            }
+        )
+
+        // Update statistiques
+        //* Statistiques modif *//
+        let year = parseInt(date.split('-')[0])
+        let month = parseInt(date.split('-')[1])
+        let week = dayjs(req.params.date).week()
+        let day = dayjs(req.params.date).day()
+
+        const nextYearIsStorage = week == 1 && month === 12 ? true : false
+
+        const calendrier = await Assistant.findOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                years: {
+                    $elemMatch: {
+                        year: year,
+                    },
+                },
+            }
+        )
+        const calendrierNextYear = await Assistant.findOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                years: {
+                    $elemMatch: {
+                        year: year + 1,
+                    },
+                },
+            }
+        )
+
+        //* Update year stats *//
+        await Assistant.updateOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                $set: {
+                    'years.$[years].statistiques.done': {
+                        time: utils.deleteHours(
+                            calendrier.years[0].statistiques.planned.time,
+                            temps
+                        ),
+                        distance:
+                            calendrier.years[0].statistiques.planned.distance -
+                            distance,
+                        sse: calendrier.years[0].statistiques.planned.sse - sse,
+                        denivele:
+                            calendrier.years[0].statistiques.planned.denivele -
+                            denivele,
+                        nombreSeance:
+                            calendrier.years[0].statistiques.planned
+                                .nombreSeance - 1,
+                    },
+                },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'years.year': year,
+                    },
+                ],
+            }
+        )
+
+        //* Update week stats *//
+        const storageOfWeek = nextYearIsStorage
+            ? calendrierNextYear.years[0].weeks[week].statistiques
+            : calendrier.years[0].weeks[week].statistiques
+
+        await Assistant.updateOne(
+            {
+                _utilisateur: userId,
+                years: {
+                    $elemMatch: {
+                        year: week == 1 && month === 12 ? year + 1 : year,
+                    },
+                },
+            },
+            {
+                $set: {
+                    'years.$[].weeks.$[weeks].statistiques.done': {
+                        time: utils.deleteHours(storageOfWeek.planned.time, temps),
+                        distance: storageOfWeek.planned.distance - distance,
+                        sse: storageOfWeek.planned.sse - sse,
+                        denivele: storageOfWeek.planned.denivele - denivele,
+                        nombreSeance: storageOfWeek.planned.nombreSeance - 1,
+                    },
+                },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'weeks.week': week,
+                    },
+                ],
+            }
+        )
+        //* Update day stats *//
+        const storageOfDay = nextYearIsStorage
+            ? calendrierNextYear.years[0].weeks[week].days[day].statistiques
+            : calendrier.years[0].weeks[week].days[day].statistiques
+
+        await Assistant.updateOne(
+            {
+                _utilisateur: userId,
+                years: {
+                    $elemMatch: {
+                        year: week == 1 && month === 12 ? year + 1 : year,
+                    },
+                },
+            },
+            {
+                $set: {
+                    'years.$[].weeks.$[].days.$[days].statistiques.done': {
+                        time: utils.deleteHours(storageOfDay.planned.time, temps),
+                        distance: storageOfDay.planned.distance - distance,
+                        sse: storageOfDay.planned.sse - sse,
+                        denivele: storageOfDay.planned.denivele - denivele,
+                        nombreSeance: storageOfDay.planned.nombreSeance - 1,
+                    },
+                },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'days.date': date,
+                    },
+                ],
+            }
+        )
+
+        return res.status(200).json({ message: 'Objectif supprimée avec succès.' })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est survenue, veuillez réessayer plus tard.',
+        })
+    }
+}
+
+/**
  * @route PUT /api/v1/assistant/calendrier/:userId/indicators/:date
  * @function putIndicators
  * @description Modification des paramètres form, tiredness for a specific day
