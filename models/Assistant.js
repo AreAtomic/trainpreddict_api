@@ -52,8 +52,8 @@ const AssistantSchema = new Schema({
                                 required: true /*[SeanceId... ||&& CoursesId]*/,
                             },
                             objectif: {
-                                type: Schema.Types.ObjectId,
-                                ref: 'Objectif',
+                                type: Array,
+                                required: false,
                             },
                             comment: {
                                 type: Array,

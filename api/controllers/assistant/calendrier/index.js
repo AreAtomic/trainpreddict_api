@@ -974,11 +974,16 @@ exports.putDayCalendrierObjectif = async (req, res) => {
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
+        let year = parseInt(date.split('-')[0])
+        let month = parseInt(date.split('-')[1])
+        let week = dayjs(req.params.date).week()
+        let day = dayjs(req.params.date).day()
+        const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
         const objectif = await Objectif.findOneAndUpdate(
             {
                 _utilisateur: userId,
-                date: date,
+                date: dayjs(date).toISOString(),
             },
             {
                 $set: {
@@ -998,34 +1003,27 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             }
         )
 
-        //* Comment modif *//
-        await Assistant.updateOne(
+        //* Objectif modif *//
+        const objectifsDay = await Assistant.updateOne(
             {
                 _utilisateur: userId,
             },
             {
                 $set: {
-                    'years.$[].weeks.$[].days.$[days].objectif': objectif._id,
+                    'years.$[].weeks.$[].days.$[days].objectif':
+                        objectif._id.toString(),
                 },
             },
             {
                 arrayFilters: [
                     {
-                        'days.date': date,
+                        'days.date': dayjs(date).toISOString(),
                     },
                 ],
             }
         )
 
         // Update statistiques
-        //* Statistiques modif *//
-        let year = parseInt(date.split('-')[0])
-        let month = parseInt(date.split('-')[1])
-        let week = dayjs(req.params.date).week()
-        let day = dayjs(req.params.date).day()
-
-        const nextYearIsStorage = week == 1 && month === 12 ? true : false
-
         const calendrier = await Assistant.findOne(
             {
                 _utilisateur: userId,
@@ -1146,7 +1144,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': date,
+                        'days.date': dayjs(date).toISOString(),
                     },
                 ],
             }
@@ -1170,20 +1168,17 @@ exports.putDayCalendrierObjectif = async (req, res) => {
 exports.deleteDayCalendrierObjectif = async (req, res) => {
     try {
         // Query informations
-        const {
-            denivele,
-            distance,
-            temps,
-        } = req.body
+        const { denivele, distance, temps } = req.body
         const userId = req.params.userId
         const date = req.params.date
+        console.log(userId)
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
 
-        const objectif = await Objectif.findOneAndDelete({
+        await Objectif.findOneAndDelete({
             _utilisateur: userId,
-            date: date,
+            date: dayjs(date).toISOString(),
         })
 
         //* Comment modif *//
@@ -1192,14 +1187,14 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
                 _utilisateur: userId,
             },
             {
-                $pull: {
-                    'years.$[].weeks.$[].days.$[days].objectif': objectif._id,
+                $set: {
+                    'years.$[].weeks.$[].days.$[days].objectif': null,
                 },
             },
             {
                 arrayFilters: [
                     {
-                        'days.date': date,
+                        'days.date': dayjs(date).toISOString(),
                     },
                 ],
             }
@@ -1207,10 +1202,11 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
 
         // Update statistiques
         //* Statistiques modif *//
-        let year = parseInt(date.split('-')[0])
-        let month = parseInt(date.split('-')[1])
+        let year = parseInt(dayjs(date).toISOString().split('-')[0])
+        let month = parseInt(dayjs(date).toISOString().split('-')[1])
         let week = dayjs(req.params.date).week()
         let day = dayjs(req.params.date).day()
+        console.log(year)
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
@@ -1218,14 +1214,8 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 _utilisateur: userId,
             },
-            {
-                years: {
-                    $elemMatch: {
-                        year: year,
-                    },
-                },
-            }
         )
+        console.log(calendrier)
         const calendrierNextYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
@@ -1290,7 +1280,10 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[weeks].statistiques.done': {
-                        time: utils.deleteHours(storageOfWeek.planned.time, temps),
+                        time: utils.deleteHours(
+                            storageOfWeek.planned.time,
+                            temps
+                        ),
                         distance: storageOfWeek.planned.distance - distance,
                         sse: storageOfWeek.planned.sse - sse,
                         denivele: storageOfWeek.planned.denivele - denivele,
@@ -1323,7 +1316,10 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[].days.$[days].statistiques.done': {
-                        time: utils.deleteHours(storageOfDay.planned.time, temps),
+                        time: utils.deleteHours(
+                            storageOfDay.planned.time,
+                            temps
+                        ),
                         distance: storageOfDay.planned.distance - distance,
                         sse: storageOfDay.planned.sse - sse,
                         denivele: storageOfDay.planned.denivele - denivele,
@@ -1334,13 +1330,15 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': date,
+                        'days.date': dayjs(date).toISOString(),
                     },
                 ],
             }
         )
 
-        return res.status(200).json({ message: 'Objectif supprimée avec succès.' })
+        return res
+            .status(200)
+            .json({ message: 'Objectif supprimée avec succès.' })
     } catch (error) {
         console.log(error)
         return res.status(500).json({

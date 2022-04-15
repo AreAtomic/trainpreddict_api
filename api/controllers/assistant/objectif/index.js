@@ -61,3 +61,23 @@ exports.editObjectif = async (req, res) => {
         })
     }
 }
+
+/**
+ * @route GET /api/v1/assistant/objectif/informations/:objectifId
+ * @function getObjectif
+ * @description Récupération d'un objectif
+ */
+exports.getObjectif = async (req, res) => {
+    try {
+        const id = req.params.objectifId
+        const objectif = await Objectif.find({ _id: id })
+
+        return res.status(200).json({ message: 'Séances récupérées', objectif })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est servenue, veuillez réessayer plus tard.',
+        })
+    }
+}
