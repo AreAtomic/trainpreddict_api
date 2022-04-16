@@ -486,24 +486,9 @@ exports.putDayCalendrierDone = async (req, res) => {
         const userId = req.utilisateur._id
         const date = req.params.date
 
-        //* Done modif *//
-        await Assistant.updateOne(
-            {
-                _utilisateur: userId,
-            },
-            {
-                $set: { 'years.$[].weeks.$[].days.$[days].done': done },
-            },
-            {
-                arrayFilters: [
-                    {
-                        'days.date': date,
-                    },
-                ],
-            }
-        )
+        console.log(done, date, dayjs(date).toISOString())
 
-        //* Statistiques modif *//
+        //* Done modif *//
         let year = parseInt(date.split('-')[0])
         let month = parseInt(date.split('-')[1])
         let week = dayjs(req.params.date).week()
@@ -512,6 +497,34 @@ exports.putDayCalendrierDone = async (req, res) => {
         const statistiques = req.body.statistiques
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
+
+        const assistant = await Assistant.findOne(
+            {
+                _utilisateur: userId,
+            },
+            { years: { $elemMatch: { year: year } } }
+        )
+        let alreadydone = assistant.years[0].weeks[week].days[day].done
+        alreadydone.push(done)
+        
+        const upload = await Assistant.updateOne(
+            {
+                _utilisateur: userId,
+            },
+            {
+                $set: { 'years.$[].weeks.$[].days.$[days].done': alreadydone },
+            },
+            {
+                arrayFilters: [
+                    {
+                        'days.date': `${date}T00:00:00.000Z`,
+                    },
+                ],
+            }
+        )
+        console.log(upload)
+
+        //* Statistiques modif *//
 
         const calendrier = await Assistant.findOne(
             {
