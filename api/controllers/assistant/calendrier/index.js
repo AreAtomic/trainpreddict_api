@@ -1176,6 +1176,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
 
+        console.log(date)
         await Objectif.findOneAndDelete({
             _utilisateur: userId,
             date: dayjs(date).toISOString(),

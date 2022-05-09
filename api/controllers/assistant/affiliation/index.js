@@ -390,7 +390,7 @@ exports.getCoureurs = async (req, res) => {
                 categorie: infoSup?.categorie,
                 next_objectif: next_objectif,
             })
-            if (index === utilisateurs.length - 1) {
+            if (data.length === utilisateurs.length) {
                 return res.status(200).json({
                     data: data,
                     message: 'Comptes affiliés récupérés',

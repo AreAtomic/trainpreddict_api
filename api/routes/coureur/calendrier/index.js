@@ -38,6 +38,11 @@ router.put(
     [jwtauth],
     CalendrierController.putDayCalendrierObjectif
 )
+router.delete(
+    '/objectif/:date',
+    [jwtauth],
+    CalendrierController.deleteDayCalendrierObjectif
+)
 router.put(
     '/indicators/:date',
     [jwtauth],

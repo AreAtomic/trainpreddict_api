@@ -26,8 +26,8 @@ let tokenValidation = async (req, res, next) => {
             const decodedToken = verifyToken(req.token, next)
             console.log(decodedToken)
             if (!decodedToken) {
-                res.status(400).json({
-                    status: 400,
+                res.status(401).json({
+                    status: 401,
                     message: 'User does not have  token',
                 })
             } else if (decodedToken.expired) {
@@ -67,14 +67,14 @@ let tokenValidation = async (req, res, next) => {
                 next()
             }
         } catch (err) {
-            res.status(400).json({
-                status: 400,
+            res.status(401).json({
+                status: 401,
                 message: 'Error with your token',
             })
         }
     } else {
-        res.status(400).json({
-            status: 400,
+        res.status(401).json({
+            status: 401,
             message: 'User does not have token',
         })
     }
