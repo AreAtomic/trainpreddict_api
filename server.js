@@ -57,6 +57,7 @@ app.use('*', cors(corsOptionsDelegate), (req, res) => {
         )
         next()
     })
+    
     // Certificats
     const privateKey = fs.readFileSync(
         '/etc/letsencrypt/live/trainpreddict.fr/privkey.pem'
