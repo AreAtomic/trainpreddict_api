@@ -89,7 +89,7 @@ exports.createCalendrier = async (req, res) => {
         }
 
         let years = []
-        for (let y = 2000; y < 2100; y++) {
+        for (let y = 2020; y < 2025; y++) {
             // Variables for weeks
             let weeks = []
             let numberOfWeek = dayjs(
@@ -105,7 +105,7 @@ exports.createCalendrier = async (req, res) => {
                 for (let d = 0; d < 7; d++) {
                     // Create day
                     const day = {
-                        date: weekValue.day(d).toISOString(),
+                        date: `${weekValue.day(d).toISOString().split('T')[0]}T00:00:00.000Z`,
                         planned: [],
                         objectif: null,
                         comment: [],
@@ -506,6 +506,7 @@ exports.putDayCalendrierDone = async (req, res) => {
         )
         let alreadydone = assistant.years[0].weeks[week].days[day].done
         alreadydone.push(done)
+        alreadydone.filter((trainingId) => trainingId !== null)
 
         const upload = await Assistant.updateOne(
             {
@@ -1181,7 +1182,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
  * @function putDayCalendrierObjectif
  * @description Modification du paramètre objectif d'un calendrier pour un jour pour un coureur avec son id
  */
- exports.deleteDayCalendrierObjectif = async (req, res) => {
+exports.deleteDayCalendrierObjectif = async (req, res) => {
     try {
         // Query informations
         const { denivele, distance, temps } = req.body
@@ -1227,11 +1228,9 @@ exports.putDayCalendrierObjectif = async (req, res) => {
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
-        const calendrier = await Assistant.findOne(
-            {
-                _utilisateur: userId,
-            },
-        )
+        const calendrier = await Assistant.findOne({
+            _utilisateur: userId,
+        })
         console.log(calendrier)
         const calendrierNextYear = await Assistant.findOne(
             {

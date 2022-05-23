@@ -8,6 +8,11 @@ const EntrainementController = require('../../../controllers/coureur/entrainemen
 //* ROUTES *//
 router.get('/', [jwtauth], EntrainementController.getAllEntrainements)
 router.post('/', [jwtauth], EntrainementController.createEntrainementFromFile)
-router.get('/:entrainementId/analyse', [jwtauth], EntrainementController.getEntrainement)
+router.get(
+    '/:entrainementId/analyse',
+    [jwtauth],
+    EntrainementController.getEntrainement
+)
+router.put('/:userId/insertions', EntrainementController.insertEntrainement)
 
 module.exports = router

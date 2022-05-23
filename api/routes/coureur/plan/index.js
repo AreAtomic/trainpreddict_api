@@ -7,5 +7,6 @@ const PlanController = require('../../../controllers/coureur/plan')
 
 //* ROUTES *//
 router.post('/', [jwtauth], PlanController.createPlan)
+router.put('/:userId', PlanController.migratePlanOldModel)
 
 module.exports = router

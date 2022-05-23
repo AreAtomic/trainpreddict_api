@@ -51,6 +51,7 @@ exports.login = async (req, res) => {
                 token: utilisateur.token,
                 profil: info,
                 firstLogged: info == null && profil == null,
+                structure: utilisateur._structure,
             },
             message: `Connexion réussie, bonjour ${
                 utilisateur.prenom !== undefined

@@ -15,6 +15,8 @@ let fitParser = new FitParser({
 const Seance = require('../../../../models/Seance')
 const Profil = require('../../../../models/Profil')
 const Entrainement = require('../../../../models/Entrainement')
+const Assistant = require('../../../../models/Assistant')
+const { FitReader } = require('../../../../services/entrainement')
 
 /**
  * @route GET /api/v1/assistant/entrainement/
@@ -69,7 +71,51 @@ exports.createEntrainementFromFile = async (req, res) => {
     // Récupération du profil
     const user = req.utilisateur._id
     const profil = await Profil.findOne({ _utilisateur: user })
-    console.log(req.headers)
+    // Vérification
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res
+            .status(400)
+            .json({ error: 'Le fichier doit être de type .fit' })
+    }
+    const file = req.files.file
+    const entrainement = new FitReader(file, user, profil)
+
+    if (await entrainement.verifyTrainingNotExist(user, file.name)) {
+        return res.status(202).json({
+            error: "Duplication d'entrainement",
+            message: "Ce fichier d'entrainement à déjà été uploader.",
+        })
+    }
+
+    try {
+        entrainement.readFile()
+        entrainement.readRecordPoints()
+        entrainement.calculSpecifique()
+        entrainement.generateDescription()
+        const entrainementToSave = new Entrainement({
+            _utilisateur: user._id,
+            ...entrainement.getEntrainement(),
+        })
+        entrainementToSave.save()
+
+        return res.status(200).json({
+            data: entrainementToSave,
+            msg: 'Entrainement créé avec succès',
+        })
+    } catch (e) {
+        console.log(e)
+        return res.status(500).json({
+            error: 'An error occured in fit reader',
+            message: e.message,
+        })
+    }
+}
+
+/** @deprecated */
+exports.createEntrainementFromFileOldOne = async (req, res) => {
+    // Récupération du profil
+    const user = req.utilisateur._id
+    const profil = await Profil.findOne({ _utilisateur: user })
     // Vérification
     if (!req.files || Object.keys(req.files).length === 0) {
         return res
@@ -646,6 +692,11 @@ exports.createEntrainementFromFile = async (req, res) => {
                     duree,
                     distance,
                     deniv,
+                    fc_max,
+                    fc_moy,
+                    cadence_moy,
+                    cadence_max,
+                    calories,
                     intensite_travail,
                     score_stress_entrainement,
                     fc_seconds: fc_seconds,
@@ -654,11 +705,6 @@ exports.createEntrainementFromFile = async (req, res) => {
                     n30_fc: n30_fc,
                     type,
                     type_entrainement,
-                    fc_max,
-                    fc_moy,
-                    cadence_moy,
-                    cadence_max,
-                    calories,
                     specifique,
                     description,
                     Z1,
@@ -1049,76 +1095,56 @@ exports.createEntrainementFromFile = async (req, res) => {
  * @description //TODO: Modification d'un entrainement
  */
 
-// CONVERTISSEURS
-// Convertisseurs
-let toHHMMSS = (secs) => {
-    let hours = Math.floor(secs / 3600)
-    let minutes = Math.floor(secs / 60) % 60
-    let seconds = secs % 60
+/**
+ * @route PUT /api/v1/coureur/entrainement/insertions
+ * @function insertEntrainement
+ * @description //TODO: Insertion des entrainements dans le plan
+ */
+exports.insertEntrainement = async (req, res) => {
+    try {
+        const userId = req.params.userId
+        const entrainementsList = await Entrainement.find({
+            _utilisateur: userId,
+        })
+        const calendar = await Assistant.findOne({ _utilisateur: userId })
 
-    if (hours) {
-        return `${hours > 9 ? hours : `0${hours}`}:${
-            minutes > 9 ? minutes : `0${minutes}`
-        }:${seconds > 9 ? seconds : `0${seconds}`}`
-    }
+        entrainementsList.forEach(async (entrainement) => {
+            const year = dayjs(entrainement.date).year()
+            const week = dayjs(entrainement.date).week()
+            const day = dayjs(entrainement.date).day()
 
-    return `00:${minutes > 9 ? minutes : `0${minutes}`}:${
-        seconds > 9 ? seconds : `0${seconds}`
-    }`
-}
+            const actualContent =
+                calendar.years[year - 2020].weeks[week].days[day].done
 
-let toKM = (val) => {
-    return parseFloat(Number.parseFloat(val).toPrecision(4))
-}
-
-let toDM = (val) => {
-    return Number.parseFloat(val).toPrecision(5) * 1000
-}
-
-// Calculs zones
-const fc_zone = (pfc) => {
-    if (pfc > 0.69) {
-        if (pfc > 0.85) {
-            if (pfc > 0.95) {
-                if (pfc > 1.05) {
-                    return 5
-                }
-                return 4
+            if (actualContent.indexOf(entrainement._id) === -1) {
+                actualContent.push(entrainement._id.toString())
             }
-            return 3
-        }
-        return 2
+            const doneArrayFiltered = clearArrayEntrainementDone(actualContent)
+
+            calendar.years[year - 2020].weeks[week].days[day].done =
+                doneArrayFiltered
+        })
+
+        calendar.save()
+
+        return res.status(203).json({
+            message: "Entrainements de l'utilisateur insérés dans le plan",
+        })
+    } catch (error) {
+        console.log('Insert entrainement - error', error)
+        return res.status(500).json({
+            error: "Impossible d'insérer les entrainements",
+            message: error.message,
+        })
     }
-    return 1
 }
 
-const power_zone = (pp) => {
-    if (pp > 0.56) {
-        if (pp > 0.76) {
-            if (pp > 0.91) {
-                if (pp > 1.06) {
-                    if (pp > 1.21) {
-                        if (pp > 1.5) {
-                            return 7
-                        }
-                        return 6
-                    }
-                    return 5
-                }
-                return 4
-            }
-            return 3
+const clearArrayEntrainementDone = (done) => {
+    done.map((entrainementId) => {
+        if (typeof entrainementId === 'string') {
+            return entrainementId.split('"')[1] || entrainementId.split('"')[0]
         }
-        return 2
-    }
-    return 1
-}
-
-moyenneArray = (arr) => {
-    let nombres = arr.length,
-        valeurs = 0
-    for (let i = 0; i < nombres; i++) {
-        valeurs += Number(arr[i])
-    }
-    return parseInt(valeurs / nombres)
+    })
+    done.filter((id) => typeof id === 'string')
+    return done.filter((id, index) => done.indexOf(id) === index)
 }
