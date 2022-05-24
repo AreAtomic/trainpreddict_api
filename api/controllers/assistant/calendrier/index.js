@@ -1211,11 +1211,9 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
-        const calendrier = await Assistant.findOne(
-            {
-                _utilisateur: userId,
-            },
-        )
+        const calendrier = await Assistant.findOne({
+            _utilisateur: userId,
+        })
         console.log(calendrier)
         const calendrierNextYear = await Assistant.findOne(
             {
@@ -1385,39 +1383,24 @@ exports.putIndicators = async (req, res) => {
                 sseDone.push(day.statistiques.done.sse)
                 let length = ssePlanned.length
                 // Calcul fatigue
-                tirednessPlanned = parseInt(
-                    utils.moyenneArray(
-                        length > 7
-                            ? ssePlanned.slice(length - 7, length)
-                            : ssePlanned
-                    )
+                day.tiredness.planned = utils.moyenneArray(
+                    length > 7
+                        ? ssePlanned.slice(length - 7, length)
+                        : ssePlanned
                 )
-                tirednessDone = parseInt(
-                    utils.moyenneArray(
-                        length > 7 ? sseDone.slice(length - 7, length) : sseDone
-                    )
+                day.tiredness.done = utils.moyenneArray(
+                    length > 7 ? sseDone.slice(length - 7, length) : sseDone
                 )
 
                 // Calcul forme
-                formPlanned = parseInt(
-                    utils.moyenneArray(
-                        length > 42
-                            ? ssePlanned.slice(length - 42, length)
-                            : ssePlanned
-                    )
+                day.form.planned = utils.moyenneArray(
+                    length > 42
+                        ? ssePlanned.slice(length - 42, length)
+                        : ssePlanned
                 )
-                formDone = parseInt(
-                    utils.moyenneArray(
-                        length > 42
-                            ? sseDone.slice(length - 42, length)
-                            : sseDone
-                    )
+                day.form.done = utils.moyenneArray(
+                    length > 42 ? sseDone.slice(length - 42, length) : sseDone
                 )
-
-                day.form.planned = formPlanned
-                day.tiredness.planned = tirednessPlanned
-                day.form.done = formDone
-                day.tiredness.done = tirednessDone
             })
         })
 

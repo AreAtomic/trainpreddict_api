@@ -113,5 +113,5 @@ exports.moyenneArray = (array) => {
     while (i < arrayLength) {
         summ = summ + array[i++]
     }
-    return summ / arrayLength
+    return parseInt(summ / arrayLength)
 }
