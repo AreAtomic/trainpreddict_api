@@ -13,9 +13,13 @@ const Assistant = require('../../../../models/Assistant')
 const Seance = require('../../../../models/Seance')
 const Course = require('../../../../models/Course')
 const Objectif = require('../../../../models/Objectif')
+const UtilisateurModel = require('../../../../models/Utilisateur')
 const {
     dateToISOStringZero,
 } = require('../../../../services/calendar/date.service')
+const {
+    updateOrganismeRace,
+} = require('../../../../services/calendar/courses.service')
 
 /**
  * @route GET /api/v1/coureur/calendrier/:year
@@ -780,34 +784,45 @@ exports.putDayCalendrierComment = async (req, res) => {
 exports.putDayCalendrierCourse = async (req, res) => {
     try {
         // Query informations
-        const { type, titre, description, denivele, distance, temps, sse } =
-            req.body
+        let { planned, adding, statistiques, model } = req.body
         const userId = req.utilisateur._id
         const date = dateToISOStringZero(req.params.date)
-        let planned = req.body.planned
+        const utilisateur = UtilisateurModel.findOne({ _id: userId })
 
-        const course = await Course.findOneAndUpdate(
-            {
-                _utilisateur: userId,
-                titre: titre,
-            },
-            {
-                $set: {
-                    date,
-                    type,
-                    description,
-                    denivele,
-                    distance,
-                    temps,
-                    sse,
+        if (adding) {
+            const course = await Course.findOneAndUpdate(
+                {
+                    _utilisateur: userId,
+                    titre: model.titre,
+                    date: date,
                 },
-            },
-            {
-                new: true,
-                upsert: true,
-            }
-        )
-        planned.push(course._id)
+                {
+                    $set: {
+                        type: model.type,
+                        description: model.description,
+                        denivele: model.denivele,
+                        distance: model.distance,
+                        temps: model.temps,
+                        sse: model.sse,
+                    },
+                },
+                {
+                    new: true,
+                    upsert: true,
+                }
+            )
+            planned[planned.length - 1] = course._id.toString()
+        } else {
+            await Course.findOneAndDelete({
+                _utilisateur: userId,
+                titre: model.titre,
+                date: date,
+            })
+        }
+
+        if (utilisateur._structure) {
+            updateOrganismeRace(model, utilisateur._structure, adding)
+        }
 
         //* Comment modif *//
         await Assistant.updateOne(
@@ -872,18 +887,22 @@ exports.putDayCalendrierCourse = async (req, res) => {
                     'years.$[years].statistiques.done': {
                         time: utils.addHours(
                             calendrier.years[0].statistiques.planned.time,
-                            temps
+                            statistiques.time
                         ),
                         distance:
                             calendrier.years[0].statistiques.planned.distance +
-                            distance,
-                        sse: calendrier.years[0].statistiques.planned.sse + sse,
+                            statistiques.distance,
+                        sse:
+                            calendrier.years[0].statistiques.planned.sse +
+                            statistiques.sse,
                         denivele:
                             calendrier.years[0].statistiques.planned.denivele +
-                            denivele,
-                        nombreSeance:
-                            calendrier.years[0].statistiques.planned
-                                .nombreSeance + 1,
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? calendrier.years[0].statistiques.planned
+                                  .nombreSeance + 1
+                            : calendrier.years[0].statistiques.planned
+                                  .nombreSeance - 1,
                     },
                 },
             },
@@ -913,11 +932,20 @@ exports.putDayCalendrierCourse = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[weeks].statistiques.done': {
-                        time: utils.addHours(storageOfWeek.planned.time, temps),
-                        distance: storageOfWeek.planned.distance + distance,
-                        sse: storageOfWeek.planned.sse + sse,
-                        denivele: storageOfWeek.planned.denivele + denivele,
-                        nombreSeance: storageOfWeek.planned.nombreSeance + 1,
+                        time: utils.addHours(
+                            storageOfWeek.planned.time,
+                            statistiques.time
+                        ),
+                        distance:
+                            storageOfWeek.planned.distance +
+                            statistiques.distance,
+                        sse: storageOfWeek.planned.sse + statistiques.sse,
+                        denivele:
+                            storageOfWeek.planned.denivele +
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? storageOfWeek.planned.nombreSeance + 1
+                            : storageOfWeek.planned.nombreSeance - 1,
                     },
                 },
             },
@@ -946,11 +974,20 @@ exports.putDayCalendrierCourse = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[].days.$[days].statistiques.done': {
-                        time: utils.addHours(storageOfDay.planned.time, temps),
-                        distance: storageOfDay.planned.distance + distance,
-                        sse: storageOfDay.planned.sse + sse,
-                        denivele: storageOfDay.planned.denivele + denivele,
-                        nombreSeance: storageOfDay.planned.nombreSeance + 1,
+                        time: utils.addHours(
+                            storageOfDay.planned.time,
+                            statistiques.time
+                        ),
+                        distance:
+                            storageOfDay.planned.distance +
+                            statistiques.distance,
+                        sse: storageOfDay.planned.sse + statistiques.sse,
+                        denivele:
+                            storageOfDay.planned.denivele +
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? storageOfDay.planned.nombreSeance + 1
+                            : storageOfDay.planned.nombreSeance - 1,
                     },
                 },
             },
@@ -972,7 +1009,6 @@ exports.putDayCalendrierCourse = async (req, res) => {
         })
     }
 }
-
 /**
  * @route PUT /api/v1/coureur/calendrier/objectif/:dayId
  * @function putDayCalendrierObjectif
