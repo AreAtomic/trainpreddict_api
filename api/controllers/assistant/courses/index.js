@@ -1,8 +1,8 @@
 //* MODULES *//
-
-const Course = require('../../../../models/Course')
+const DateServices = require('../../../../services/calendar/date.service')
 
 //* MODELS *//
+const Course = require('../../../../models/Course')
 
 /**
  * @route GET /api/v1/assistant/course/:courseId
@@ -29,7 +29,7 @@ exports.getCoursesUser = async (req, res) => {
  * @function getCoursesOrganisme
  * @description Récupération des courses d'un utilisateur course
  */
- exports.getCoursesOrganisme = async (req, res) => {
+exports.getCoursesOrganisme = async (req, res) => {
     try {
         const id = req.utilisateur._id
         const courses = await Course.find({ _organisme: id })
@@ -61,10 +61,10 @@ exports.putCourses = async (req, res) => {
             {
                 _organisme: req.utilisateur._id,
                 titre: titre,
+                date: DateServices.dateToISOStringZero(date),
             },
             {
                 $set: {
-                    date,
                     type,
                     description,
                     denivele,

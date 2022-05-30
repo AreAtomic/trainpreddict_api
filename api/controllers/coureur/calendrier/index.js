@@ -13,6 +13,9 @@ const Assistant = require('../../../../models/Assistant')
 const Seance = require('../../../../models/Seance')
 const Course = require('../../../../models/Course')
 const Objectif = require('../../../../models/Objectif')
+const {
+    dateToISOStringZero,
+} = require('../../../../services/calendar/date.service')
 
 /**
  * @route GET /api/v1/coureur/calendrier/:year
@@ -105,7 +108,9 @@ exports.createCalendrier = async (req, res) => {
                 for (let d = 0; d < 7; d++) {
                     // Create day
                     const day = {
-                        date: `${weekValue.day(d).toISOString().split('T')[0]}T00:00:00.000Z`,
+                        date: `${
+                            weekValue.day(d).toISOString().split('T')[0]
+                        }T00:00:00.000Z`,
                         planned: [],
                         objectif: null,
                         comment: [],
@@ -251,7 +256,7 @@ exports.putDayCalendrierPlanned = async (req, res) => {
         // Query informations
         const planned = req.body.planned
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
 
         //* Planned modif *//
         await Assistant.updateOne(
@@ -484,7 +489,7 @@ exports.putDayCalendrierDone = async (req, res) => {
         // Query informations
         const done = req.body.done
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
 
         console.log(done, date, dayjs(date).toISOString())
 
@@ -518,7 +523,7 @@ exports.putDayCalendrierDone = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': `${date}T00:00:00.000Z`,
+                        'days.date': date,
                     },
                 ],
             }
@@ -734,7 +739,7 @@ exports.putDayCalendrierComment = async (req, res) => {
         // Query informations
         const comment = req.body.comment
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
 
         //* Comment modif *//
         await Assistant.updateOne(
@@ -778,7 +783,7 @@ exports.putDayCalendrierCourse = async (req, res) => {
         const { type, titre, description, denivele, distance, temps, sse } =
             req.body
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
         let planned = req.body.planned
 
         const course = await Course.findOneAndUpdate(
@@ -987,7 +992,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             sse,
         } = req.body
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
 
         const objectif = await Objectif.findOneAndUpdate(
             {
@@ -1026,7 +1031,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1187,7 +1192,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         // Query informations
         const { denivele, distance, temps } = req.body
         const userId = req.utilisateur._id
-        const date = req.params.date
+        const date = dateToISOStringZero(req.params.date)
         console.log(userId)
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
@@ -1212,7 +1217,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1346,7 +1351,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1477,7 +1482,6 @@ exports.putIndicators = async (req, res) => {
 
 exports.getDayPlannedObject = async (req, res) => {
     try {
-        console.log('Get object')
         const seanceId = req.params.seanceId
         let data = await Seance.findOne({ _id: seanceId })
         if (!data) {

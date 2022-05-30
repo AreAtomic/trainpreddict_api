@@ -30,7 +30,7 @@ const CourseSchema = new Schema({
             'Road trip',
             'Distance',
             'Montagne',
-            'VTT'
+            'VTT',
         ],
         default: 'Vallon',
     },
@@ -57,6 +57,10 @@ const CourseSchema = new Schema({
     sse: {
         type: Number,
         default: 200,
+    },
+    course: {
+        type: Boolean,
+        default: true,
     },
 })
 

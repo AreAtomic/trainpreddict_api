@@ -54,4 +54,10 @@ router.put(
     CalendrierController.putIndicators
 )
 
+router.put(
+    '/:userId/statistiques/done',
+    [jwtauth],
+    CalendrierController.putStatistiquesDone
+)
+
 module.exports = router

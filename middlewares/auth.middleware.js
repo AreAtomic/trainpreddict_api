@@ -24,7 +24,6 @@ let tokenValidation = async (req, res, next) => {
         req.token = token
         try {
             const decodedToken = verifyToken(req.token, next)
-            console.log(decodedToken)
             if (!decodedToken) {
                 res.status(401).json({
                     status: 401,

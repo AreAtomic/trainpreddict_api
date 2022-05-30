@@ -65,6 +65,4 @@ const ObjectifSchema = new Schema({
     },
 })
 
-ObjectifSchema.index({ date: -1 })
-
 module.exports = mongoose.model('Objectif', ObjectifSchema)

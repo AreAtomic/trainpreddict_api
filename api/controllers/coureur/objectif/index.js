@@ -11,7 +11,11 @@ const Objectif = require('../../../../models/Objectif')
 exports.getAllObjectifs = async (req, res) => {
     try {
         const id = req.utilisateur._id
-        const objectifs = await Objectif.find({ _utilisateur: id })
+        const objectifs = await Objectif.find({ _utilisateur: id }).sort({
+            date: 1,
+        })
+
+        console.log(objectifs)
 
         return res
             .status(200)

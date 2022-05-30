@@ -7,12 +7,14 @@ const weekOfYear = require('dayjs/plugin/weekOfYear')
 dayjs.extend(isoWeeksInYear)
 dayjs.extend(isLeapYear)
 dayjs.extend(weekOfYear)
+const DateServices = require('../../../../services/calendar/date.service')
 
 //* MODELS *//
 const Assistant = require('../../../../models/Assistant')
 const Seance = require('../../../../models/Seance')
 const Course = require('../../../../models/Course')
 const Objectif = require('../../../../models/Objectif')
+const Entrainement = require('../../../../models/Entrainement')
 
 /**
  * @route GET /api/v1/assistant/calendrier/:userId/:year
@@ -249,7 +251,7 @@ exports.putDayCalendrierPlanned = async (req, res) => {
         // Query informations
         const planned = req.body.planned
         const userId = req.params.userId
-        const date = req.params.date
+        const date = DateServices.dateToISOStringZero(req.params.date)
 
         //* Planned modif *//
         await Assistant.updateOne(
@@ -302,6 +304,8 @@ exports.putDayCalendrierPlanned = async (req, res) => {
                 },
             }
         )
+
+        console.log(statistiques)
 
         //* Update year stats *//
         await Assistant.updateOne(
@@ -482,7 +486,7 @@ exports.putDayCalendrierDone = async (req, res) => {
         // Query informations
         const done = req.body.done
         const userId = req.params.userId
-        const date = req.params.date
+        const date = DateServices.dateToISOStringZero(req.params.date)
 
         //* Done modif *//
         await Assistant.updateOne(
@@ -718,7 +722,7 @@ exports.putDayCalendrierComment = async (req, res) => {
         // Query informations
         const comment = req.body.comment
         const userId = req.params.userId
-        const date = req.params.date
+        const date = DateServices.dateToISOStringZero(req.params.date)
 
         //* Comment modif *//
         await Assistant.updateOne(
@@ -759,34 +763,37 @@ exports.putDayCalendrierComment = async (req, res) => {
 exports.putDayCalendrierCourse = async (req, res) => {
     try {
         // Query informations
-        const { type, titre, description, denivele, distance, temps, sse } =
-            req.body
+        let { planned, adding, statistiques, model } = req.body
         const userId = req.params.userId
-        const date = req.params.date
-        let planned = req.body.planned
+        const date = DateServices.dateToISOStringZero(req.params.date)
+        console.log('putDayCalendrierCourse', planned)
 
-        const course = await Course.findOneAndUpdate(
-            {
-                _utilisateur: userId,
-                titre: titre,
-            },
-            {
-                $set: {
-                    date,
-                    type,
-                    description,
-                    denivele,
-                    distance,
-                    temps,
-                    sse,
+        if (adding) {
+            const course = await Course.findOneAndUpdate(
+                {
+                    _utilisateur: userId,
+                    titre: model.titre,
+                    date: date,
                 },
-            },
-            {
-                new: true,
-                upsert: true,
-            }
-        )
-        planned.push(course._id)
+                {
+                    $set: {
+                        type: model.type,
+                        description: model.description,
+                        denivele: model.denivele,
+                        distance: model.distance,
+                        temps: model.temps,
+                        sse: model.sse,
+                    },
+                },
+                {
+                    new: true,
+                    upsert: true,
+                }
+            )
+            planned[planned.length - 1] = course._id.toString()
+        }
+
+        console.log(planned)
 
         //* Comment modif *//
         await Assistant.updateOne(
@@ -851,18 +858,22 @@ exports.putDayCalendrierCourse = async (req, res) => {
                     'years.$[years].statistiques.done': {
                         time: utils.addHours(
                             calendrier.years[0].statistiques.planned.time,
-                            temps
+                            statistiques.time
                         ),
                         distance:
                             calendrier.years[0].statistiques.planned.distance +
-                            distance,
-                        sse: calendrier.years[0].statistiques.planned.sse + sse,
+                            statistiques.distance,
+                        sse:
+                            calendrier.years[0].statistiques.planned.sse +
+                            statistiques.sse,
                         denivele:
                             calendrier.years[0].statistiques.planned.denivele +
-                            denivele,
-                        nombreSeance:
-                            calendrier.years[0].statistiques.planned
-                                .nombreSeance + 1,
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? calendrier.years[0].statistiques.planned
+                                  .nombreSeance + 1
+                            : calendrier.years[0].statistiques.planned
+                                  .nombreSeance - 1,
                     },
                 },
             },
@@ -892,11 +903,20 @@ exports.putDayCalendrierCourse = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[weeks].statistiques.done': {
-                        time: utils.addHours(storageOfWeek.planned.time, temps),
-                        distance: storageOfWeek.planned.distance + distance,
-                        sse: storageOfWeek.planned.sse + sse,
-                        denivele: storageOfWeek.planned.denivele + denivele,
-                        nombreSeance: storageOfWeek.planned.nombreSeance + 1,
+                        time: utils.addHours(
+                            storageOfWeek.planned.time,
+                            statistiques.time
+                        ),
+                        distance:
+                            storageOfWeek.planned.distance +
+                            statistiques.distance,
+                        sse: storageOfWeek.planned.sse + statistiques.sse,
+                        denivele:
+                            storageOfWeek.planned.denivele +
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? storageOfWeek.planned.nombreSeance + 1
+                            : storageOfWeek.planned.nombreSeance - 1,
                     },
                 },
             },
@@ -925,11 +945,20 @@ exports.putDayCalendrierCourse = async (req, res) => {
             {
                 $set: {
                     'years.$[].weeks.$[].days.$[days].statistiques.done': {
-                        time: utils.addHours(storageOfDay.planned.time, temps),
-                        distance: storageOfDay.planned.distance + distance,
-                        sse: storageOfDay.planned.sse + sse,
-                        denivele: storageOfDay.planned.denivele + denivele,
-                        nombreSeance: storageOfDay.planned.nombreSeance + 1,
+                        time: utils.addHours(
+                            storageOfDay.planned.time,
+                            statistiques.time
+                        ),
+                        distance:
+                            storageOfDay.planned.distance +
+                            statistiques.distance,
+                        sse: storageOfDay.planned.sse + statistiques.sse,
+                        denivele:
+                            storageOfDay.planned.denivele +
+                            statistiques.denivele,
+                        nombreSeance: adding
+                            ? storageOfDay.planned.nombreSeance + 1
+                            : storageOfDay.planned.nombreSeance - 1,
                     },
                 },
             },
@@ -970,7 +999,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             temps,
         } = req.body
         const userId = req.params.userId
-        const date = req.params.date
+        const date = DateServices.dateToISOStringZero(req.params.date)
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
@@ -1017,7 +1046,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1144,7 +1173,7 @@ exports.putDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1170,7 +1199,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         // Query informations
         const { denivele, distance, temps } = req.body
         const userId = req.params.userId
-        const date = req.params.date
+        const date = DateServices.dateToISOStringZero(req.params.date)
         console.log(userId)
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
@@ -1195,7 +1224,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1329,7 +1358,7 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
             {
                 arrayFilters: [
                     {
-                        'days.date': dayjs(date).toISOString(),
+                        'days.date': date,
                     },
                 ],
             }
@@ -1367,13 +1396,7 @@ exports.putIndicators = async (req, res) => {
             }
         )
 
-        // Planned
-        let tirednessPlanned = 0
-        let formPlanned = 0
         let ssePlanned = []
-        // Done
-        let tirednessDone = 0
-        let formDone = 0
         let sseDone = []
 
         const year = plan.years[0]
@@ -1436,7 +1459,6 @@ exports.putIndicators = async (req, res) => {
 
 exports.getDayPlannedObject = async (req, res) => {
     try {
-        console.log('Get object')
         const seanceId = req.params.seanceId
         let data = await Seance.findOne({ _id: seanceId })
         if (!data) {
@@ -1455,5 +1477,216 @@ exports.getDayPlannedObject = async (req, res) => {
             error: error.message,
             message: 'Une erreur est survenue, veuillez réessayer plus tard.',
         })
+    }
+}
+
+exports.putStatistiquesDone = async (req, res) => {
+    try {
+        // Query informations
+        const userId = req.params.userId
+
+        //* Done modif *//
+        const entrainementsDone = await Entrainement.find({
+            _utilisateur: userId,
+        })
+
+        const updateStatistiques = new UpdateStatistiquesDone(userId)
+
+        await Promise.all(
+            entrainementsDone.map(async (entrainement) => {
+                const date = DateServices.dateToISOStringZero(dayjs(entrainement.date))
+                let year = dayjs(date).year()
+                let month = dayjs(date).month()
+                let week = dayjs(date).week()
+
+                const nextYearIsStorage =
+                    week == 1 && month === 12 ? true : false
+
+                updateStatistiques.countNewDay(entrainement)
+                console.log(updateStatistiques.day)
+                await Assistant.updateOne(
+                    {
+                        _utilisateur: userId,
+                    },
+                    {
+                        $set: {
+                            'years.$[years].statistiques.done': {
+                                time: updateStatistiques.year.time,
+                                distance: updateStatistiques.year.distance,
+                                sse: updateStatistiques.year.sse,
+                                denivele: updateStatistiques.year.denivele,
+                                nombreSeance:
+                                    updateStatistiques.year.nombreSeance,
+                            },
+                        },
+                    },
+                    {
+                        arrayFilters: [
+                            {
+                                'years.year': year,
+                            },
+                        ],
+                    }
+                )
+
+                //* Update week stats *//
+                await Assistant.updateOne(
+                    {
+                        _utilisateur: userId,
+                        years: {
+                            $elemMatch: {
+                                year: nextYearIsStorage ? year + 1 : year,
+                            },
+                        },
+                    },
+                    {
+                        $set: {
+                            'years.$[].weeks.$[weeks].statistiques.done': {
+                                time: updateStatistiques.week.time,
+                                distance: updateStatistiques.week.distance,
+                                sse: updateStatistiques.week.sse,
+                                denivele: updateStatistiques.week.denivele,
+                                nombreSeance:
+                                    updateStatistiques.week.nombreSeance,
+                            },
+                        },
+                    },
+                    {
+                        arrayFilters: [
+                            {
+                                'weeks.week': week,
+                            },
+                        ],
+                    }
+                )
+                //* Update day stats *//
+                await Assistant.updateOne(
+                    {
+                        _utilisateur: userId,
+                        years: {
+                            $elemMatch: {
+                                year: nextYearIsStorage ? year + 1 : year,
+                            },
+                        },
+                    },
+                    {
+                        $set: {
+                            'years.$[].weeks.$[].days.$[days].statistiques.done':
+                                {
+                                    time: updateStatistiques.day.time,
+                                    distance: updateStatistiques.day.distance,
+                                    sse: updateStatistiques.day.sse,
+                                    denivele: updateStatistiques.day.denivele,
+                                    nombreSeance:
+                                        updateStatistiques.day.nombreSeance,
+                                },
+                        },
+                    },
+                    {
+                        arrayFilters: [
+                            {
+                                'days.date': date,
+                            },
+                        ],
+                    }
+                )
+            })
+        )
+
+        const calendar = await Assistant.findOne({
+            _utilisateur: userId,
+        })
+
+        console.log(calendar.years[calendar.years.length - 1].weeks[9].days[0])
+
+        return res.status(200).json({
+            message: 'Calendrier récupéré avec succès',
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est servenue, veuillez réessayer plus tard.',
+        })
+    }
+}
+
+const UpdateStatistiquesDone = class {
+    constructor(userId) {
+        this.userId = userId
+        this.year = {
+            year: dayjs().year(),
+            time: '00:00:00',
+            distance: 0,
+            sse: 0,
+            denivele: 0,
+            nombreSeance: 0,
+        }
+
+        this.week = {
+            week: dayjs().week(),
+            time: '00:00:00',
+            distance: 0,
+            sse: 0,
+            denivele: 0,
+            nombreSeance: 0,
+        }
+
+        this.day = {
+            date: dayjs().format('DD/MM/YYYY'),
+            time: '00:00:00',
+            distance: 0,
+            sse: 0,
+            denivele: 0,
+            nombreSeance: 0,
+        }
+    }
+
+    countNewDay = (entrainement) => {
+        this.updateDay(entrainement)
+        this.updateWeek(entrainement)
+        this.updateYear(entrainement)
+    }
+
+    updateDay = (entrainement) => {
+        if (dayjs(entrainement.date).format('DD/MM/YYYY') !== this.date) {
+            this.day.date = dayjs(entrainement.date).format('DD/MM/YYYY')
+            this.day.time = entrainement.duree
+            this.day.distance = entrainement.distance
+            this.day.sse = entrainement.score_stress_entrainement
+            this.day.denivele = entrainement.deniv
+            this.day.nombreSeance = 1
+        } else {
+            this.day.time = utils.addHours(this.day.time, entrainement.duree)
+            this.day.nombreSeance += 1
+        }
+    }
+
+    updateWeek = (entrainement) => {
+        if (dayjs(entrainement.date).week() !== dayjs(this.date).week()) {
+            this.week.week = dayjs(entrainement.date).week()
+            this.week.time = entrainement.duree
+            this.week.distance = entrainement.distance
+            this.week.sse = entrainement.score_stress_entrainement
+            this.week.denivele = entrainement.deniv
+            this.week.nombreSeance = 1
+        } else {
+            this.week.time = utils.addHours(this.week.time, entrainement.duree)
+            this.week.nombreSeance += 1
+        }
+    }
+
+    updateYear = (entrainement) => {
+        if (dayjs(entrainement.date).year() !== dayjs(this.date).year()) {
+            this.year.year = dayjs(entrainement.date).year()
+            this.year.time = entrainement.duree
+            this.year.distance = entrainement.distance
+            this.year.sse = entrainement.score_stress_entrainement
+            this.year.denivele = entrainement.deniv
+            this.year.nombreSeance = 1
+        } else {
+            this.year.time = utils.addHours(this.year.time, entrainement.duree)
+            this.year.nombreSeance += 1
+        }
     }
 }
