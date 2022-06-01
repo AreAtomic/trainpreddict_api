@@ -2,6 +2,7 @@
 const mongo = require('mongodb')
 //* MODELS *//
 const Seance = require('../../../../models/Seance')
+const ParametreStructure = require('../../../../models/ParametreStructure')
 
 conversion_minute = (time) => {
     duree_heure = parseInt(time.charAt(0) + time.charAt(1))
@@ -43,6 +44,10 @@ exports.createSeance = async (req, res) => {
             titre: titre,
             _utilisateur: req.utilisateur._id,
         })
+        const parametres = await ParametreStructure.findOne({
+            _structure: req.utilisateur._id,
+        })
+        console.log(parametres)
         if (seance) {
             return res.status(400).json({
                 error: `La séance ${titre} existe déjà`,
@@ -70,6 +75,7 @@ exports.createSeance = async (req, res) => {
             intensite_travail,
             score_stress_entrainement,
             _utilisateur: utilisateur,
+            public: parametres ? parametres.seance.partage : true,
         })
 
         seance.save()
@@ -112,12 +118,19 @@ exports.getSeanceByType = async (req, res) => {
  */
 exports.getAllSeance = async (req, res) => {
     try {
-        console.log('Get seances')
-        const seances = await Seance.find({})
-        return res.status(200).json({
-            data: seances,
-            msg: 'Toutes les séances sont récupérées',
-        })
+        if (req.utilisateur.type !== 'Admin') {
+            const seances = await Seance.find({ public: { $ne: false } })
+            return res.status(200).json({
+                data: seances,
+                msg: 'Toutes les séances sont récupérées',
+            })
+        } else {
+            const seances = await Seance.find({})
+            return res.status(200).json({
+                data: seances,
+                msg: 'Toutes les séances sont récupérées',
+            })
+        }
     } catch (e) {
         return res.status(200).json({ error: 'Network error' })
     }

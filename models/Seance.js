@@ -114,6 +114,11 @@ const SeanceSchema = new Schema({
         ref: 'Utilisateur',
         required: false,
     },
+
+    public: {
+        type: Boolean,
+        default: true,
+    },
 })
 
 module.exports = mongoose.model('Seance', SeanceSchema)

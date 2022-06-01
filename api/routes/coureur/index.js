@@ -8,6 +8,7 @@ const ObjectifRoutes = require('./objectif')
 const CoursesRoutes = require('./courses')
 const ProfilRoutes = require('./profil')
 const PlanRoutes = require('./plan')
+const ConfigRoutes = require('./config')
 
 //* ROUTES *//
 router.use('/calendrier', CalendrierRoutes)
@@ -16,9 +17,6 @@ router.use('/entrainement', EntrainementRoutes)
 router.use('/objectif', ObjectifRoutes)
 router.use('/profil', ProfilRoutes)
 router.use('/plan', PlanRoutes)
-router.use('/config', (req, res) => {
-    // TODO: Create and link config routers
-    return res.status(200).json({ message: 'Routers of config' })
-})
+router.use('/config', ConfigRoutes)
 
 module.exports = router

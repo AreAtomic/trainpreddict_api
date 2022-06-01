@@ -6,6 +6,7 @@ const utils = require('../utils')
 
 //* MODELS *//
 const Utilisateur = require('../../../../models/Utilisateur')
+const ParametreStructure = require('../../../../models/ParametreStructure')
 
 /**
  * @route POST /api/v1/assistant/affiliation/coureur/new
@@ -40,6 +41,10 @@ exports.createOrganisme = async (req, res) => {
         })
 
         user.save()
+
+        await ParametreStructure.create({
+            _structure: user._id,
+        })
 
         let transporter = nodemailer.createTransport({
             host: 'ssl0.ovh.net',
@@ -173,11 +178,9 @@ exports.createOrganisme = async (req, res) => {
             }
         })
 
-        return res
-            .status(200)
-            .json({
-                message: 'Inscription réussie, un email vous a été envoyé.',
-            })
+        return res.status(200).json({
+            message: 'Inscription réussie, un email vous a été envoyé.',
+        })
     } catch (e) {
         console.log(e)
         return res.status(200).json({

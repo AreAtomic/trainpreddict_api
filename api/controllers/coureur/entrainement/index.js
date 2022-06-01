@@ -78,7 +78,7 @@ exports.createEntrainementFromFile = async (req, res) => {
             .json({ error: 'Le fichier doit être de type .fit' })
     }
     const file = req.files.file
-    const entrainement = new FitReader(file, user, profil)
+    const entrainement = new FitReader.FitReader(file, user, profil)
 
     if (await entrainement.verifyTrainingNotExist(user, file.name)) {
         return res.status(202).json({
