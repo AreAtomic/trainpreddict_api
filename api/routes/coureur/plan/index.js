@@ -6,7 +6,7 @@ const { jwtauth } = require('../../../../middlewares/auth.middleware')
 const PlanController = require('../../../controllers/coureur/plan')
 
 //* ROUTES *//
-router.post('/', [jwtauth], PlanController.createPlan)
+router.post('/', PlanController.createPlan)
 router.put('/:userId', PlanController.migratePlanOldModel)
 
 module.exports = router

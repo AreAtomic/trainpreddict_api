@@ -7,28 +7,43 @@ const weekOfYear = require('dayjs/plugin/weekOfYear')
 dayjs.extend(isoWeeksInYear)
 dayjs.extend(isLeapYear)
 dayjs.extend(weekOfYear)
+const { Plan } = require('../../../../services/calendar/plan.service')
 
 //* MODELS *//
+const Utilisateur = require('../../../../models/Utilisateur')
 const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
 const PlanModel = require('../../../../models/Plan')
 const AssistantModel = require('../../../../models/Assistant')
-const calculPlan = require('../../../../utils/calculPlan')
 const Objectif = require('../../../../models/Objectif')
+const Profil = require('../../../../models/Profil')
 
 exports.createPlan = async (req, res) => {
     try {
-        const { objectifId } = req.body
-        const objectif = await Objectif.findOne({ _id: objectifId })
-        const donnesUtilisateur = await DonneesUtilisateur.findOne({
-            _utilisateur: req.utilisateur._id,
+        const utilisateur = await Utilisateur.findOne({
+            email: 'fake@trainpreddict.fr',
+        })
+        const profil = await Profil.findOne({ _utilisateur: utilisateur._id })
+        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+            _utilisateur: utilisateur._id,
+        })
+        const objectifs = await Objectif.find({
+            _utilisateur: utilisateur._id,
+        }).sort({ date: -1 })
+        const calendar = await AssistantModel.findOne({
+            _utilisateur: utilisateur._id,
         })
 
-        const plan = await calculPlan(
-            JSON.parse(JSON.stringify(objectif)).date_objectif,
-            JSON.parse(JSON.stringify(objectif)).date_debut,
-            donnesUtilisateur,
-            false
+        plan = new Plan(
+            utilisateur,
+            profil,
+            donneesUtilisateur,
+            objectifs,
+            calendar
         )
+
+        const seances = await plan.possibleSeance(true, false, true)
+        const seanceMaximum = plan.seanceMaximum(objectifs[0])
+        const planGenerated = plan.createPlanForObjectifs()
 
         return res
             .status(200)
@@ -83,7 +98,7 @@ exports.migratePlanOldModel = async (req, res) => {
                     actualyCommented
             })
         })
-        
+
         calendar.save()
 
         return res

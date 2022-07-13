@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const connectDB = require('./config/db')
+const { connectDB } = require('./config/db')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
 
@@ -10,8 +10,8 @@ const dotenv = require('dotenv')
 dotenv.config()
 let corsOptions = {
     origin: '*',
-    optionsSuccessStatus: 204
-  }
+    optionsSuccessStatus: 204,
+}
 //Serveur
 const app = express()
 app.use('*', cors(corsOptions))
@@ -21,11 +21,10 @@ app.listen(process.env.PORT, () => {
 app.use(express.json({ extended: false }))
 app.use(fileUpload())
 app.use(cors(corsOptions))
-//Database 
+//Database
 connectDB()
 
 /**
  * Routeur
  */
 app.use('/api/v1', require('./api'))
-

@@ -19,6 +19,7 @@ const connectDB = async () => {
             useUnifiedTopology: true,
         })
         console.log('Connection to Mongo DB done')
+        return
     } catch (err) {
         console.error(err.message)
         // Exit process with failure
@@ -26,4 +27,8 @@ const connectDB = async () => {
     }
 }
 
-module.exports = connectDB
+const disconnectDB = () => {
+    mongoose.connection.close()
+}
+
+module.exports = { connectDB, disconnectDB }

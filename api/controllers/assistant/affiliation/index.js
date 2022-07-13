@@ -87,20 +87,21 @@ exports.createCoureur = async (req, res) => {
         utilisateur.mot_de_passe = await bcrypt.hash(mdp_decrypt, salt)
         await utilisateur.save()
 
+        let profil = new Profil({
+            _utilisateur: utilisateur.id,
+        })
+        profil.save()
+
         infosup = new InfoSup({
             _utilisateur: utilisateur.id,
             naissance: dayjs(naissance).toISOString(),
             adresse,
             decouverte: `Depuis la structure ${structure.nom}`,
-            categorie,
+            categorie:
+                typeof categorie === 'string' ? categorie : 'Non licencié',
             telephone,
         })
         await infosup.save()
-
-        let profil = new Profil({
-            _utilisateur: utilisateur.id,
-        })
-        profil.save()
 
         let inscris = await Utilisateur.find({ type: 'Coureur' })
         let numero = inscris.length

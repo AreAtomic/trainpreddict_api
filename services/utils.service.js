@@ -15,6 +15,19 @@ exports.toTimeFormat = (secs) => {
     }`
 }
 
+exports.dureeToSeconds = (duree) => {
+    const time = duree.split(':')
+    return time[0] * 3600 + time[1] * 60 + time[2] * 1
+}
+
+exports.hourToSeconds = (hour) => {
+    return hour * 3600
+}
+
+exports.minutesToSeconds = (minutes) => {
+    return minutes * 60
+}
+
 exports.toKilometer = (val) => {
     return parseFloat(Number.parseFloat(val).toPrecision(4))
 }
