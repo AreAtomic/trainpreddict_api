@@ -20,7 +20,7 @@ const Profil = require('../../../../models/Profil')
 exports.createPlan = async (req, res) => {
     try {
         const utilisateur = await Utilisateur.findOne({
-            email: 'fake@trainpreddict.fr',
+            _id: req.body.userId,
         })
         const profil = await Profil.findOne({ _utilisateur: utilisateur._id })
         const donneesUtilisateur = await DonneesUtilisateur.findOne({

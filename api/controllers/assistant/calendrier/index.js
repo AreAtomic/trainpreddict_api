@@ -107,7 +107,7 @@ exports.createCalendrier = async (req, res) => {
                 for (let d = 0; d < 7; d++) {
                     // Create day
                     const day = {
-                        date: weekValue.day(d).toISOString(),
+                        date: DateServices.dateToISOStringZero(weekValue.day(d)),
                         planned: [],
                         objectif: null,
                         comment: [],

@@ -1,9 +1,11 @@
 const dayjs = require('dayjs')
 const duration = require('dayjs/plugin/duration')
 dayjs.extend(duration)
+const DateServices = require('../calendar/date.service')
 
 const { addHours } = require('../../api/controllers/coureur/utils')
 const Seance = require('../../models/Seance')
+const Assistant = require('../../models/Assistant')
 const {
     hourToSeconds,
     toTimeFormat,
@@ -65,6 +67,7 @@ exports.Plan = class {
         // Plan court
         // TODO: adapt normalIntensityPattern
         console.log('court')
+        throw "Il doit y avoir 8 semaines minimum entre chaques objectif."
     }
 
     normalIntensityPattern = async (nombreSemaine, startingDay, objectif) => {
@@ -216,7 +219,53 @@ exports.Plan = class {
             }
         }
 
-        //TODO: export trainings
+        await this.insertTrainingInPlan(startingDay, trainings)
+        this.calendar = await Assistant.findOne({ _utilisateur: this.user._id })
+    }
+
+    insertTrainingInPlan = async (startingDay, trainings) => {
+        await Promise.all(
+            trainings.map(async (training, index) => {
+                const date = DateServices.dateToISOStringZero(
+                    dayjs(startingDay).add(index, 'day')
+                )
+                console.log(date)
+                if (training !== null) {
+                    const statistiques = {
+                        time: training.duree,
+                        distance: training.estimation_distance,
+                        denivele: training.estimation_deniv,
+                        sse: training.score_stress_entrainement,
+                        nombreSeance: 1,
+                    }
+                    console.log(statistiques)
+
+                    await Assistant.updateOne(
+                        {
+                            _utilisateur: this.user._id,
+                        },
+                        {
+                            $set: {
+                                'years.$[].weeks.$[].days.$[days].planned': [
+                                    training._id,
+                                ],
+                                'years.$[].weeks.$[].days.$[days].statistiques.planned': [
+                                    statistiques,
+                                ],
+                            },
+                        },
+                        {
+                            arrayFilters: [
+                                {
+                                    'days.date': date,
+                                },
+                            ],
+                        }
+                    )
+                }
+                return date
+            })
+        )
     }
 
     generateWeekWithPercentage = (percentage) => {
