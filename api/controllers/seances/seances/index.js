@@ -47,7 +47,7 @@ exports.createSeance = async (req, res) => {
         const parametres = await ParametreStructure.findOne({
             _structure: req.utilisateur._id,
         })
-        console.log(parametres)
+
         if (seance) {
             return res.status(400).json({
                 error: `La séance ${titre} existe déjà`,

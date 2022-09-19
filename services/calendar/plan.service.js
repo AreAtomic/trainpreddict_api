@@ -229,7 +229,7 @@ exports.Plan = class {
                 const date = DateServices.dateToISOStringZero(
                     dayjs(startingDay).add(index, 'day')
                 )
-                console.log(date)
+
                 if (training !== null) {
                     const statistiques = {
                         time: training.duree,
@@ -238,7 +238,6 @@ exports.Plan = class {
                         sse: training.score_stress_entrainement,
                         nombreSeance: 1,
                     }
-                    console.log(statistiques)
 
                     await Assistant.updateOne(
                         {

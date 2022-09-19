@@ -1,8 +1,9 @@
 //* MODULES *//
 
 //* MODELS *//
-const Profil = require('../../../../models/Profil')
-const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
+const ProfilModel = require('../../../../models/Profil')
+const DonneesUtilisateurModel = require('../../../../models/DonneesUtilisateur')
+const UtilisateurModel = require('../../../../models/Utilisateur')
 
 /**
  * @route GET /api/v1/coureur/profil
@@ -12,8 +13,8 @@ const DonneesUtilisateur = require('../../../../models/DonneesUtilisateur')
 exports.getProfile = async (req, res) => {
     try {
         const utilisateur = req.utilisateur._id
-        const profil = await Profil.findOne({ _utilisateur: utilisateur })
-        const donneesUtilisateur = await DonneesUtilisateur.findOne({
+        const profil = await ProfilModel.findOne({ _utilisateur: utilisateur })
+        const donneesUtilisateur = await DonneesUtilisateurModel.findOne({
             _utilisateur: utilisateur,
         })
 
@@ -79,29 +80,30 @@ exports.putProfile = async (req, res) => {
             age,
         } = req.body
 
-        const donneesUtilisateur = await DonneesUtilisateur.findOneAndUpdate(
-            { _utilisateur: req.utilisateur._id },
-            {
-                $set: {
-                    sse: sse,
-                    experience: experience,
-                    heure_sommeil: heure_sommeil,
-                    temps_recup_max: temps_recup_max,
-                    nombre_heure_semaine: nombre_heure_semaine,
-                    nombre_seance_semaine: nombre_seance_semaine,
-                    musculation: musculation,
-                    ppg: ppg,
-                    etirement: etirement,
-                    foncier: foncier,
-                    style: style,
-                    point_faible: point_faible,
-                    jours_repos: jours_repos,
+        const donneesUtilisateur =
+            await DonneesUtilisateurModel.findOneAndUpdate(
+                { _utilisateur: req.utilisateur._id },
+                {
+                    $set: {
+                        sse: sse,
+                        experience: experience,
+                        heure_sommeil: heure_sommeil,
+                        temps_recup_max: temps_recup_max,
+                        nombre_heure_semaine: nombre_heure_semaine,
+                        nombre_seance_semaine: nombre_seance_semaine,
+                        musculation: musculation,
+                        ppg: ppg,
+                        etirement: etirement,
+                        foncier: foncier,
+                        style: style,
+                        point_faible: point_faible,
+                        jours_repos: jours_repos,
+                    },
                 },
-            },
-            { new: true, upsert: true }
-        )
+                { new: true, upsert: true }
+            )
 
-        const profil = await Profil.findOneAndUpdate(
+        const profil = await ProfilModel.findOneAndUpdate(
             { _utilisateur: req.utilisateur._id },
             { $set: { fcfs, pfs, age, poids } },
             { new: true, upsert: true }
@@ -134,4 +136,41 @@ exports.putProfile = async (req, res) => {
             },
         })
     } catch (error) {}
+}
+
+/**
+ * @route GET /api/v1/coureur/profil/onboarding
+ * @function getOnBoarding
+ * @description Récupère l'état d'onboarding d'un profil avec le userId
+ */
+exports.getOnBoarding = async (req, res) => {
+    const utilisateurId = req.utilisateur._id
+    const utilisateur = await UtilisateurModel.findOne({ _id: utilisateurId })
+
+    console.log(utilisateur, utilisateurId)
+    if (!utilisateur) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' })
+    }
+
+    return res.status(200).json({
+        onboarding: utilisateur.onboarding,
+        message: 'Utilisateur récupéré',
+    })
+}
+
+exports.putOnBoarding = async (req, res) => {
+    const utilisateurId = req.utilisateur._id
+    const utilisateur = await UtilisateurModel.findOneAndUpdate(
+        { _id: utilisateurId },
+        { $set: { onboarding: req.body.onboarding } }
+    )
+
+    if (!utilisateur) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' })
+    }
+
+    return res.status(200).json({
+        onboarding: req.body.onboarding,
+        message: 'Utilisateur récupéré',
+    })
 }

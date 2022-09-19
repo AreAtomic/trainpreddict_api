@@ -30,7 +30,7 @@ const UtilisateurSchema = new Schema({
         type: 'string',
         required: true,
     },
-    onbaording: {
+    onboarding: {
         complete: {
             type: Boolean,
             default: false,

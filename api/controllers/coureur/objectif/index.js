@@ -15,8 +15,6 @@ exports.getAllObjectifs = async (req, res) => {
             date: 1,
         })
 
-        console.log(objectifs)
-
         return res
             .status(200)
             .json({ message: 'Objectifs récupérés', data: objectifs })

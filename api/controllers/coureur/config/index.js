@@ -13,7 +13,7 @@ exports.getConfig = async (req, res) => {
     try {
         const userId = req.utilisateur._id
         const utilisateur = await Utilisateur.findOne({ _id: userId })
-        console.log(utilisateur._structure)
+
         let parametres = await ParametreStructure.findOne({
             _structure: utilisateur._structure,
         })

@@ -305,8 +305,6 @@ exports.putDayCalendrierPlanned = async (req, res) => {
             }
         )
 
-        console.log(statistiques)
-
         //* Update year stats *//
         await Assistant.updateOne(
             {
@@ -766,7 +764,6 @@ exports.putDayCalendrierCourse = async (req, res) => {
         let { planned, adding, statistiques, model } = req.body
         const userId = req.params.userId
         const date = DateServices.dateToISOStringZero(req.params.date)
-        console.log('putDayCalendrierCourse', planned)
 
         if (adding) {
             const course = await Course.findOneAndUpdate(
@@ -792,8 +789,6 @@ exports.putDayCalendrierCourse = async (req, res) => {
             )
             planned[planned.length - 1] = course._id.toString()
         }
-
-        console.log(planned)
 
         //* Comment modif *//
         await Assistant.updateOne(
@@ -1200,12 +1195,11 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         const { denivele, distance, temps } = req.body
         const userId = req.params.userId
         const date = DateServices.dateToISOStringZero(req.params.date)
-        console.log(userId)
+
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
 
-        console.log(date)
         await Objectif.findOneAndDelete({
             _utilisateur: userId,
             date: dayjs(date).toISOString(),
@@ -1236,14 +1230,12 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         let month = parseInt(dayjs(date).toISOString().split('-')[1])
         let week = dayjs(req.params.date).week()
         let day = dayjs(req.params.date).day()
-        console.log(year)
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
         const calendrier = await Assistant.findOne({
             _utilisateur: userId,
         })
-        console.log(calendrier)
         const calendrierNextYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
@@ -1503,7 +1495,6 @@ exports.putStatistiquesDone = async (req, res) => {
                     week == 1 && month === 12 ? true : false
 
                 updateStatistiques.countNewDay(entrainement)
-                console.log(updateStatistiques.day)
                 await Assistant.updateOne(
                     {
                         _utilisateur: userId,
@@ -1596,8 +1587,6 @@ exports.putStatistiquesDone = async (req, res) => {
         const calendar = await Assistant.findOne({
             _utilisateur: userId,
         })
-
-        console.log(calendar.years[calendar.years.length - 1].weeks[9].days[0])
 
         return res.status(200).json({
             message: 'Calendrier récupéré avec succès',

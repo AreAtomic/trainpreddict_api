@@ -55,7 +55,6 @@ exports.getProfile = async (req, res) => {
  */
 exports.putProfile = async (req, res) => {
     try {
-        console.log('Profile update')
         const {
             sse,
             experience,

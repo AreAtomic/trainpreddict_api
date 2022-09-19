@@ -495,8 +495,6 @@ exports.putDayCalendrierDone = async (req, res) => {
         const userId = req.utilisateur._id
         const date = dateToISOStringZero(req.params.date)
 
-        console.log(done, date, dayjs(date).toISOString())
-
         //* Done modif *//
         let year = parseInt(date.split('-')[0])
         let month = parseInt(date.split('-')[1])
@@ -532,7 +530,6 @@ exports.putDayCalendrierDone = async (req, res) => {
                 ],
             }
         )
-        console.log(upload)
 
         //* Statistiques modif *//
 
@@ -1229,12 +1226,11 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         const { denivele, distance, temps } = req.body
         const userId = req.utilisateur._id
         const date = dateToISOStringZero(req.params.date)
-        console.log(userId)
+
         const sse =
             parseInt(temps.split(':')[0]) * 100 +
             parseInt(temps.split(':')[1]) * 1.67
 
-        console.log(date)
         await Objectif.findOneAndDelete({
             _utilisateur: userId,
             date: dayjs(date).toISOString(),
@@ -1265,14 +1261,12 @@ exports.deleteDayCalendrierObjectif = async (req, res) => {
         let month = parseInt(dayjs(date).toISOString().split('-')[1])
         let week = dayjs(req.params.date).week()
         let day = dayjs(req.params.date).day()
-        console.log(year)
 
         const nextYearIsStorage = week == 1 && month === 12 ? true : false
 
         const calendrier = await Assistant.findOne({
             _utilisateur: userId,
         })
-        console.log(calendrier)
         const calendrierNextYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
