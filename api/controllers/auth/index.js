@@ -26,6 +26,8 @@ exports.login = async (req, res) => {
             utilisateur.mot_de_passe
         )
 
+        console.log(utilisateur)
+
         if (!isMatch) {
             return res.status(400).json({ error: 'Mot de passe invalide' })
         }
