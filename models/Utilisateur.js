@@ -1,4 +1,3 @@
-const { ObjectID } = require('bson')
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
@@ -14,7 +13,7 @@ const UtilisateurSchema = new Schema({
     type: {
         type: String,
         enum: ['Coureur', 'Coach', 'Club', 'Admin'],
-        default: 'Coureur'
+        default: 'Coureur',
     },
     _structure: {
         type: Schema.Types.ObjectId,
@@ -30,6 +29,18 @@ const UtilisateurSchema = new Schema({
     mot_de_passe: {
         type: 'string',
         required: true,
+    },
+    onbaording: {
+        complete: {
+            type: Boolean,
+            default: false,
+        },
+        step: {
+            type: Number,
+            default: 0,
+            max: 3,
+            min: 0,
+        },
     },
 })
 
