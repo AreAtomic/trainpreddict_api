@@ -30,6 +30,14 @@ const UtilisateurSchema = new Schema({
         type: 'string',
         required: true,
     },
+    code_securite: {
+        type: Number,
+        default: null,
+    },
+    isConfirmed: {
+        type: Boolean,
+        default: false,
+    },
     onboarding: {
         complete: {
             type: Boolean,
