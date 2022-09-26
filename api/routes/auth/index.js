@@ -12,6 +12,7 @@ router.get('/:userId', AuthControllers.getUserById)
 router.get('/confirm/:userId', AuthControllers.confirmRegistration)
 router.get('/cancel/:userId', AuthControllers.cancelRegistration)
 router.post('/changePassword', AuthControllers.changePassword)
-router.get('/:email/reset/password', AuthControllers.resetPassword)
+router.get('/:email/reset/password', AuthControllers.getCode)
+router.put('/:email/reset/password', AuthControllers.resetPassword)
 
 module.exports = router

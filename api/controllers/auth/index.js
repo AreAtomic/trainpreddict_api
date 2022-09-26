@@ -162,9 +162,9 @@ exports.getUserById = async (req, res) => {
 exports.confirmRegistration = async (req, res) => {
     const { userId } = req.params
     const utilisateur = await Utilisateur.findOne({ _id: userId })
-    
+
     await Utilisateur.findOneAndUpdate({ _id: userId }, { isConfirmed: true })
-    
+
     emailServices.welcomeEmail(
         utilisateur.email,
         utilisateur.prenom,
@@ -194,9 +194,12 @@ exports.cancelRegistration = async (req, res) => {
  * @route api/v1/:email/resetpassword
  * @description Permet de récupérer l'id de l'utilisateur avec son email
  */
-exports.resetPassword = async (req, res) => {
+exports.getCode = async (req, res) => {
     const email = req.params.email
-    const user = await Utilisateur.findOne({ email: email })
+    const user = await Utilisateur.findOne(
+        { email: email },
+        { email: 1, nom: 1, prenom: 1 }
+    )
 
     if (!user) {
         return res
@@ -204,42 +207,41 @@ exports.resetPassword = async (req, res) => {
             .json({ error: 'Aucun utilisateur avec cet email' })
     }
 
-    let transporter = nodemailer.createTransport({
-        host: 'ssl0.ovh.net',
-        port: 465,
-        secure: true,
-        auth: {
-            user: 'support@trainpreddict.fr',
-            pass: '(TrainPreddict2021!)',
-        },
-    })
+    const random =
+        Math.floor(Math.random() * 1000).toString() +
+        Math.floor(Math.random() * 1000).toString()
 
-    let mailOptions = {
-        from: 'support@trainpreddict.fr',
-        to: email,
-        subject: 'Réinitialisation mot de passe',
-        text: `Bonjour,
+    const code = `${
+        random.length < 6 ? `${(5 - random.length) * 10}${random}` : random
+    }`
 
-      Vous avez perdu votre mot de passe et vous souhaitez le changer? Vous n'avez qu'à suivre ce lien https://trainpreddict.fr/password/${user.id} 
+    const salt = await bcrypt.genSalt(hasher)
+    const codeHashed = await bcrypt.hash(code, salt)
 
-      Si vous n'êtes pas à l'origine de cette demande repondez nous à ce mail.
+    await Utilisateur.findOneAndUpdate(
+        { email: email },
+        { $set: { code: code } }
+    )
 
-      L'équipe TrainPreddict
-    `,
-    }
+    emailServices.passwordReinitialisation(email, user.prenom, user.nom, code)
 
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            return res.status(400).send({
-                error: "Une erreur est survenue durant l'envoie du mail",
-            })
-        } else {
-            return res.status(200).send({
-                data: info,
-                msg: 'Email envoyé, regardez votre boite mail.',
-            })
-        }
-    })
+    return res.status(200).json({ user: { ...user._doc, code: codeHashed } })
+}
+
+/**
+ * @route api/v1/:email/resetpassword
+ * @description Permet de récupérer l'id de l'utilisateur avec son email
+ */
+exports.resetPassword = async (req, res) => {
+    const email = req.params.email
+    const password = req.body.password
+
+    const user = await Utilisateur.findOneAndUpdate(
+        { email: email },
+        { $set: { mot_de_passe: password } }
+    )
+
+    return res.status(200).json({ user })
 }
 
 exports.changePassword = async (req, res) => {

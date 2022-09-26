@@ -77,3 +77,39 @@ exports.welcomeEmail = (email, firstName, lastName) => {
         }
     )
 }
+
+exports.passwordReinitialisation = (email, firstName, lastName, code) => {
+    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
+
+    sendSmtpEmail = {
+        to: [
+            {
+                email: email,
+                name: `${firstName} ${lastName}`,
+            },
+        ],
+        templateId: 10,
+        params: {
+            PRENOM: firstName,
+            CODE: code,
+        },
+        headers: {
+            'X-Mailin-custom':
+                'custom_header_1:custom_value_1|custom_header_2:custom_value_2',
+        },
+    }
+
+    apiInstance.sendTransacEmail(sendSmtpEmail).then(
+        function (data) {
+            console.log(
+                'API called successfully. Returned data: ' +
+                    JSON.stringify(data)
+            )
+            return
+        },
+        function (error) {
+            console.error(error)
+            throw error
+        }
+    )
+}
