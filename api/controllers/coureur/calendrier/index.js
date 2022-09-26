@@ -1119,7 +1119,10 @@ exports.putDayCalendrierObjectif = async (req, res) => {
                         distance:
                             calendrier.years[0].statistiques.planned.distance +
                             distance,
-                        sse: calendrier.years[0].statistiques.planned.sse + sse,
+                        sse: sse
+                            ? calendrier.years[0].statistiques.planned.sse + sse
+                            : temps.split(':')[0] * 100 +
+                              temps.split(':')[1] * 1.6,
                         denivele:
                             calendrier.years[0].statistiques.planned.denivele +
                             denivele,
@@ -1157,7 +1160,10 @@ exports.putDayCalendrierObjectif = async (req, res) => {
                     'years.$[].weeks.$[weeks].statistiques.done': {
                         time: utils.addHours(storageOfWeek.planned.time, temps),
                         distance: storageOfWeek.planned.distance + distance,
-                        sse: storageOfWeek.planned.sse + sse,
+                        sse: sse
+                            ? storageOfWeek.planned.sse + sse
+                            : temps.split(':')[0] * 100 +
+                              temps.split(':')[1] * 1.6,
                         denivele: storageOfWeek.planned.denivele + denivele,
                         nombreSeance: storageOfWeek.planned.nombreSeance + 1,
                     },
@@ -1190,7 +1196,10 @@ exports.putDayCalendrierObjectif = async (req, res) => {
                     'years.$[].weeks.$[].days.$[days].statistiques.done': {
                         time: utils.addHours(storageOfDay.planned.time, temps),
                         distance: storageOfDay.planned.distance + distance,
-                        sse: storageOfDay.planned.sse + sse,
+                        sse: sse
+                            ? storageOfDay.planned.sse + sse
+                            : temps.split(':')[0] * 100 +
+                              temps.split(':')[1] * 1.6,
                         denivele: storageOfDay.planned.denivele + denivele,
                         nombreSeance: storageOfDay.planned.nombreSeance + 1,
                     },

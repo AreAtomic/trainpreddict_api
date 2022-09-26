@@ -41,9 +41,9 @@ exports.createPlan = async (req, res) => {
             calendar
         )
 
-        const seances = await plan.possibleSeance(true, false, true)
-        const seanceMaximum = plan.seanceMaximum(objectifs[0])
-        const planGenerated = plan.createPlanForObjectifs()
+        await plan.possibleSeance(true, false, true)
+        plan.seanceMaximum(objectifs[0])
+        plan.createPlanForObjectifs()
 
         return res
             .status(200)

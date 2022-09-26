@@ -67,7 +67,7 @@ exports.Plan = class {
         // Plan court
         // TODO: adapt normalIntensityPattern
         console.log('court')
-        throw "Il doit y avoir 8 semaines minimum entre chaques objectif."
+        throw 'Il doit y avoir 8 semaines minimum entre chaques objectif.'
     }
 
     normalIntensityPattern = async (nombreSemaine, startingDay, objectif) => {
@@ -115,11 +115,13 @@ exports.Plan = class {
                     choosed = parseInt(
                         Math.random() * seanceSemaine[type][specifique].length
                     )
+                    console.log(seanceSemaine[type][specifique][choosed])
                     trainingDays.push(seanceSemaine[type][specifique][choosed])
                 } else {
                     choosed = parseInt(
                         Math.random() * seanceSemaine[type].length
                     )
+                    console.log(seanceSemaine[type][choosed])
                     trainingDays.push(seanceSemaine[type][choosed])
                 }
             }
@@ -131,6 +133,7 @@ exports.Plan = class {
                     ? Math.round(0.1 * nombreJourEntrainement)
                     : 0
 
+            console.log(nombreJourEntrainement)
             for (let i = 0; i < nombreJourEntrainement; i++) {
                 if (numberOfSecondType === 0) {
                     if (numberOfMusculation === 0) {
@@ -226,6 +229,7 @@ exports.Plan = class {
     insertTrainingInPlan = async (startingDay, trainings) => {
         await Promise.all(
             trainings.map(async (training, index) => {
+                console.log('training Insertion', training)
                 const date = DateServices.dateToISOStringZero(
                     dayjs(startingDay).add(index, 'day')
                 )
@@ -248,9 +252,8 @@ exports.Plan = class {
                                 'years.$[].weeks.$[].days.$[days].planned': [
                                     training._id,
                                 ],
-                                'years.$[].weeks.$[].days.$[days].statistiques.planned': [
-                                    statistiques,
-                                ],
+                                'years.$[].weeks.$[].days.$[days].statistiques.planned':
+                                    [statistiques],
                             },
                         },
                         {
