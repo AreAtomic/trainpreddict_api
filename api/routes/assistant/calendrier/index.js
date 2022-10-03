@@ -60,4 +60,5 @@ router.put(
     CalendrierController.putStatistiquesDone
 )
 
+router.post('/create/all', CalendrierController.createCalendrierForAll)
 module.exports = router

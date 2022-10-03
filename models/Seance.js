@@ -56,9 +56,7 @@ const SeanceSchema = new Schema({
     description: {
         type: String,
     },
-    specifique_description: {
-        Array,
-    },
+    specifique_description: { type: String },
 
     // Donnes physiologiques attendues
     Z1: {

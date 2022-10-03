@@ -15,6 +15,7 @@ const Seance = require('../../../../models/Seance')
 const Course = require('../../../../models/Course')
 const Objectif = require('../../../../models/Objectif')
 const Entrainement = require('../../../../models/Entrainement')
+const Utilisateur = require('../../../../models/Utilisateur')
 
 /**
  * @route GET /api/v1/assistant/calendrier/:userId/:year
@@ -107,7 +108,9 @@ exports.createCalendrier = async (req, res) => {
                 for (let d = 0; d < 7; d++) {
                     // Create day
                     const day = {
-                        date: DateServices.dateToISOStringZero(weekValue.day(d)),
+                        date: DateServices.dateToISOStringZero(
+                            weekValue.day(d)
+                        ),
                         planned: [],
                         objectif: null,
                         comment: [],
@@ -1486,7 +1489,9 @@ exports.putStatistiquesDone = async (req, res) => {
 
         await Promise.all(
             entrainementsDone.map(async (entrainement) => {
-                const date = DateServices.dateToISOStringZero(dayjs(entrainement.date))
+                const date = DateServices.dateToISOStringZero(
+                    dayjs(entrainement.date)
+                )
                 let year = dayjs(date).year()
                 let month = dayjs(date).month()
                 let week = dayjs(date).week()
@@ -1677,5 +1682,128 @@ const UpdateStatistiquesDone = class {
             this.year.time = utils.addHours(this.year.time, entrainement.duree)
             this.year.nombreSeance += 1
         }
+    }
+}
+
+exports.createCalendrierForAll = async (req, res) => {
+    try {
+        const users = await Utilisateur.find({})
+
+        for (let i = 0; i < users.length; i++) {
+            const userId = users[i]._id
+            let assistant = await Assistant.findOne({ _utilisateur: userId })
+            if (!assistant) {
+                let years = []
+                for (let y = 2020; y < 2023; y++) {
+                    // Variables for weeks
+                    let weeks = []
+                    let numberOfWeek = dayjs(
+                        `01-01-${y}`,
+                        'MM-DD-YYYY'
+                    ).isoWeeksInYear()
+
+                    for (let w = 0; w <= numberOfWeek; w++) {
+                        // Variables for days
+                        let days = []
+                        let weekValue = dayjs(`01-01-${y}`, 'MM-DD-YYYY').week(
+                            w
+                        )
+
+                        for (let d = 0; d < 7; d++) {
+                            // Create day
+                            const day = {
+                                date: DateServices.dateToISOStringZero(
+                                    weekValue.day(d)
+                                ),
+                                planned: [],
+                                objectif: null,
+                                comment: [],
+                                done: [],
+                                statistiques: {
+                                    planned: {
+                                        time: '00:00:00',
+                                        distance: 0,
+                                        sse: 0,
+                                        denivele: 0,
+                                        nombreSeance: 0,
+                                    },
+                                    done: {
+                                        time: '00:00:00',
+                                        distance: 0,
+                                        sse: 0,
+                                        denivele: 0,
+                                        nombreSeance: 0,
+                                    },
+                                },
+                                form: { planned: 0, done: 0 },
+                                tiredness: { planned: 0, done: 0 },
+                            }
+                            days.push(day)
+                        }
+                        //Create week
+                        week = {
+                            week: w,
+                            days: days,
+                            statistiques: {
+                                planned: {
+                                    time: '00:00:00',
+                                    distance: 0,
+                                    sse: 0,
+                                    denivele: 0,
+                                    nombreSeance: 0,
+                                },
+                                done: {
+                                    time: '00:00:00',
+                                    distance: 0,
+                                    sse: 0,
+                                    denivele: 0,
+                                    nombreSeance: 0,
+                                },
+                            },
+                            form: { planned: 0, done: 0 },
+                        }
+                        weeks.push(week)
+                    }
+                    // Create year
+                    year = {
+                        year: y,
+                        statistiques: {
+                            planned: {
+                                time: '00:00:00',
+                                distance: 0,
+                                sse: 0,
+                                denivele: 0,
+                                nombreSeance: 0,
+                            },
+                            done: {
+                                time: '00:00:00',
+                                distance: 0,
+                                sse: 0,
+                                denivele: 0,
+                                nombreSeance: 0,
+                            },
+                        },
+                        weeks: weeks,
+                    }
+                    years.push(year)
+                }
+                await Assistant.findOneAndUpdate(
+                    {
+                        _utilisateur: userId,
+                    },
+                    { $set: { years: years } },
+                    { new: true, upsert: true }
+                )
+            }
+        }
+        return res.status(200).json({
+            message: 'Assistant created successfully',
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            error: error.message,
+            message: 'Une erreur est servenue, veuillez réessayer plus tard.',
+        })
     }
 }
