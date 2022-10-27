@@ -286,3 +286,8 @@ exports.changePassword = async (req, res) => {
         })
     }
 }
+
+exports.getUserWithToken = async (req, res) => {
+    const user = req.utilisateur
+    return res.status(200).json({ user })
+}
