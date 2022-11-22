@@ -14,8 +14,9 @@ const ArticlesSchema = new Schema({
         type: Array,
         default: [],
     },
-    cover: {
-        type: String,
+    _cover: {
+        type: Schema.Types.ObjectId,
+        ref: 'Image',
     },
     state: {
         type: String,

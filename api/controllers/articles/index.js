@@ -32,7 +32,7 @@ exports.getArticleById = async (req, res) => {
     try {
         const article = await ArticleModel.findOne({
             _id: articleId,
-        })
+        }).populate('_cover')
 
         return res
             .status(200)
@@ -52,20 +52,26 @@ exports.putArticleById = async (req, res) => {
     const ISOString = dayjs().toISOString()
 
     try {
-        await ArticleModel.findOneAndUpdate({
-            _id: articleId,
-            title: title,
-            content: content,
-            cover: cover,
-            state: state,
-            lastUpdate: ISOString,
-        })
+        await ArticleModel.findOneAndUpdate(
+            {
+                _id: articleId,
+            },
+            {
+                $set: {
+                    title: title,
+                    content: content,
+                    _cover: cover._id,
+                    state: state,
+                    lastUpdate: ISOString,
+                },
+            }
+        )
 
         return res.status(200).json({
-            message: 'Article récupéré avec succès',
+            message: 'Article modifié avec succès',
             article: await ArticleModel.findOne({
                 _id: articleId,
-            }),
+            }).populate('_cover'),
         })
     } catch (error) {
         console.log('Catch', error)
@@ -98,6 +104,23 @@ exports.getUserArticlesPage = async (req, res) => {
         const articles = await ArticleModel.find({
             _writer: req.utilisateur._id,
         })
+            .skip(page * limit)
+            .limit(limit)
+
+        return res
+            .status(200)
+            .json({ message: 'Articles récupérés avec succès', articles })
+    } catch (error) {
+        console.log('Catch', error)
+        res.status(500).json({ message: 'Erreur serveur', error: error })
+    }
+}
+
+exports.getAllArticlesPage = async (req, res) => {
+    const { page, limit } = req.params
+
+    try {
+        const articles = await ArticleModel.find({}).populate('_cover')
             .skip(page * limit)
             .limit(limit)
 

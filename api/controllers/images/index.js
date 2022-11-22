@@ -1,5 +1,7 @@
 const ImageKit = require('imagekit')
 
+const imageModel = require('../../../models/Images')
+
 const imagekit = new ImageKit({
     publicKey: 'public_ynuaNRT7MIThLV7dVJz9cIxWCJI=',
     privateKey: 'private_ipWOhUhJDX/0rcZlaPCNS+r8ZSU=',
@@ -19,19 +21,36 @@ exports.uploadImage = (req, res) => {
     imagekit.upload(
         { file: file.data, fileName: fileName },
         (error, result) => {
-            console.log(error, result)
             if (error) {
-                console.log('File upload error', error)
+                console.log('imageKit error -', error)
                 return res.status(500).json({
-                    message:
-                        "Une erreur est survenue durant l'upload de l'image",
-                    error: error,
+                    error: 'Une erreur est survenue',
+                    message: "Image kit n'a pas réussi a enregistrer l'image",
                 })
             }
 
-            return res
-                .status(200)
-                .json({ message: 'Image uploadée avec succès', result })
+            imageModel
+                .create({
+                    _owner: req.utilisateur.id,
+                    fileId: result.fileId,
+                    name: result.name,
+                    thumbnailUrl: result.thumbnailUrl,
+                    url: result.url,
+                })
+                .then((image) => {
+                    console.log(image)
+                    return res
+                        .status(200)
+                        .json({ message: 'Image uploadée avec succès', image })
+                })
+                .catch((error) => {
+                    console.log('mongoDB error -', error)
+                    return res.status(500).json({
+                        error: 'Une erreur est survenue',
+                        message:
+                            "Impossible d'enregistrer l'image sur notre base de données.",
+                    })
+                })
         }
     )
 }
