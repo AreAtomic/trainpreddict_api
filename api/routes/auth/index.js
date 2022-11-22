@@ -1,6 +1,7 @@
 //* MODULES *//
 const express = require('express')
 const router = express.Router()
+const { jwtauth } = require('../../../middlewares/auth.middleware')
 //* CONTROLLERS *//
 const AuthControllers = require('../../controllers/auth')
 
@@ -14,5 +15,6 @@ router.get('/cancel/:userId', AuthControllers.cancelRegistration)
 router.post('/changePassword', AuthControllers.changePassword)
 router.get('/:email/reset/password', AuthControllers.getCode)
 router.put('/:email/reset/password', AuthControllers.resetPassword)
+router.get('/link/token', [jwtauth], AuthControllers.getUserWithToken)
 
 module.exports = router
