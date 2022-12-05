@@ -14,7 +14,6 @@ exports.getAllObjectifs = async (req, res) => {
         const objectifs = await Objectif.find({ _utilisateur: id }).sort({
             date: 1,
         })
-        console.log(objectifs)
 
         return res
             .status(200)

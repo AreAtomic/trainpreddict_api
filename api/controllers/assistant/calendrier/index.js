@@ -8,6 +8,7 @@ dayjs.extend(isoWeeksInYear)
 dayjs.extend(isLeapYear)
 dayjs.extend(weekOfYear)
 const DateServices = require('../../../../services/calendar/date.service')
+const AssistantServices = require('../../../../services/calendar/assistant.service')
 
 //* MODELS *//
 const Assistant = require('../../../../models/Assistant')
@@ -27,7 +28,9 @@ exports.getCalendrier = async (req, res) => {
         const userId = req.params.userId
         const year = parseInt(req.params.year)
 
-        const actualYear = await Assistant.findOne(
+        console.log(year)
+
+        let actualYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -39,7 +42,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        const pastYear = await Assistant.findOne(
+        if (actualYear.years.length === 0) {
+            actualYear = await AssistantServices.generateYear(userId, year)
+        }
+
+        let pastYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -51,7 +58,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        const nextYear = await Assistant.findOne(
+        if (pastYear.years.length === 0) {
+            pastYear = await AssistantServices.generateYear(userId, year - 1)
+        }
+
+        let nextYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -63,6 +74,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
+        if (nextYear.years.length === 0) {
+            nextYear = await AssistantServices.generateYear(userId, year + 1)
+        }
+
+        console.log(actualYear, pastYear, nextYear)
         return res.status(200).json({
             data: { actualYear, pastYear, nextYear },
             message: 'Calendrier récupéré avec succès',
@@ -92,7 +108,7 @@ exports.createCalendrier = async (req, res) => {
         }
 
         let years = []
-        for (let y = 2020; y < 2023; y++) {
+        for (let y = 2023; y < 2025; y++) {
             // Variables for weeks
             let weeks = []
             let numberOfWeek = dayjs(

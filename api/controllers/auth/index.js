@@ -21,6 +21,8 @@ exports.getHashedPassword = async (req, res) => {
             { email: email },
             { mot_de_passe: 1 }
         )
+
+        console.log(utilisateur, email)
         if (!utilisateur) {
             return res.status(400).json({ error: "L'email est invalide" })
         }
