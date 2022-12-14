@@ -28,7 +28,10 @@ exports.generateYear = async (userId, year) => {
         for (let d = 0; d < 7; d++) {
             const date = DateServices.dateToISOStringZero(weekValue.day(d))
             // Create day
-            if (date.indexOf(year+1) === -1) {
+            if (
+                date.indexOf(year - 1) === -1 &&
+                date.indexOf(year + 1) === -1
+            ) {
                 const day = {
                     date: date,
                     planned: [],

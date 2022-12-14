@@ -20,6 +20,7 @@ const {
 const {
     updateOrganismeRace,
 } = require('../../../../services/calendar/courses.service')
+const AssistantServices = require('../../../../services/calendar/assistant.service')
 
 /**
  * @route GET /api/v1/coureur/calendrier/:year
@@ -31,7 +32,9 @@ exports.getCalendrier = async (req, res) => {
         const userId = req.utilisateur._id
         const year = parseInt(req.params.year)
 
-        const actualYear = await Assistant.findOne(
+        console.log(year)
+
+        let actualYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -43,7 +46,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        const pastYear = await Assistant.findOne(
+        if (actualYear.years.length === 0) {
+            actualYear = await AssistantServices.generateYear(userId, year)
+        }
+
+        let pastYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -55,7 +62,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        const nextYear = await Assistant.findOne(
+        if (pastYear.years.length === 0) {
+            pastYear = await AssistantServices.generateYear(userId, year - 1)
+        }
+
+        let nextYear = await Assistant.findOne(
             {
                 _utilisateur: userId,
             },
@@ -67,6 +78,11 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
+        if (nextYear.years.length === 0) {
+            nextYear = await AssistantServices.generateYear(userId, year + 1)
+        }
+
+        console.log(actualYear, pastYear, nextYear)
         return res.status(200).json({
             data: { actualYear, pastYear, nextYear },
             message: 'Calendrier récupéré avec succès',

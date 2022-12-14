@@ -45,7 +45,7 @@ let tokenValidation = async (req, res, next) => {
                     _id: utilisateur._id,
                     email: utilisateur.email,
                     prenom: utilisateur.prenom,
-                    nom: utilisateur.prenom,
+                    nom: utilisateur.nom,
                     token: utilisateur.token,
                     type: utilisateur.type,
                 }
