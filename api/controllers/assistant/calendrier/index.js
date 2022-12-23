@@ -44,6 +44,9 @@ exports.getCalendrier = async (req, res) => {
         )
         if (actualYear.years.length === 0) {
             actualYear = await AssistantServices.generateYear(userId, year)
+        } else {
+            // TODO: remove when all users will have good year generations
+            actualYear = await AssistantServices.fixYear(userId, year)
         }
 
         let pastYear = await Assistant.findOne(

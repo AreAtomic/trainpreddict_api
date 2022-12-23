@@ -7,6 +7,7 @@ const ConcepteurRoutes = require('./routes/seances')
 const CoureurRoutes = require('./routes/coureur')
 const ArticleRoutes = require('./routes/articles')
 const ImageRoutes = require('./routes/images')
+const DebugRoutes = require('./routes/debug')
 
 //* ROUTES *//
 router.get('/', (req, res) => {
@@ -19,5 +20,6 @@ router.use('/coureur', CoureurRoutes)
 router.use('/concepteur', ConcepteurRoutes)
 router.use('/articles', ArticleRoutes)
 router.use('/images', ImageRoutes)
+router.use('/debug', DebugRoutes)
 
 module.exports = router
