@@ -17,13 +17,16 @@ exports.getProfile = async (req, res) => {
             _utilisateur: utilisateur,
         })
 
+        if(!profil){
+            
+        } 
         return res.status(200).json({
             message: 'Profil récupéré avec succès',
             data: {
-                fcfs: profil.fcfs,
-                pfs: profil.pfs,
-                age: profil.age,
-                poids: profil.poids,
+                fcfs: profil?.fcfs,
+                pfs: profil?.pfs,
+                age: profil?.age,
+                poids: profil?.poids,
                 sse: donneesUtilisateur?.sse,
                 experience: donneesUtilisateur?.experience,
                 heure_sommeil: donneesUtilisateur?.heure_sommeil,

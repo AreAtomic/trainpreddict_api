@@ -46,7 +46,7 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        if (actualYear.years.length === 0) {
+        if (!actualYear || actualYear?.years?.length === 0) {
             actualYear = await AssistantServices.generateYear(userId, year)
         }
 
@@ -62,7 +62,7 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        if (pastYear.years.length === 0) {
+        if (!pastYear || pastYear.years.length === 0) {
             pastYear = await AssistantServices.generateYear(userId, year - 1)
         }
 
@@ -78,7 +78,7 @@ exports.getCalendrier = async (req, res) => {
                 },
             }
         )
-        if (nextYear.years.length === 0) {
+        if (!nextYear || nextYear.years.length === 0) {
             nextYear = await AssistantServices.generateYear(userId, year + 1)
         }
 
