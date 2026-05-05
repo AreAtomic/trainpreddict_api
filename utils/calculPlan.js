@@ -11,6 +11,7 @@ const fecthAllSeances = async () => {
     let seance_rythme = await Seances.find({ type: { $in: 'Rythme' } })
     let seance_recup = await Seances.find({ type: { $in: 'Recuperation' } })
 
+<<<<<<< HEAD
     console.log(
         seance_foncier,
         seance_seuil,
@@ -20,6 +21,8 @@ const fecthAllSeances = async () => {
         seance_recup
     )
 
+=======
+>>>>>>> production
     return {
         Foncier: seance_foncier,
         Seuil: seance_seuil,
@@ -57,6 +60,7 @@ const fetching = async () => {
     return await fecthAllSeances()
 }
 
+<<<<<<< HEAD
 const calculPlan = async (objectif, donneesUtilisateur, ht) => {
     const {
         date_objectif,
@@ -66,6 +70,9 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
         temps,
     } = objectif
 
+=======
+const calculPlan = async (date_objectif, date_debut, donneesUtilisateur, ht) => {
+>>>>>>> production
     const type = [
         'Foncier',
         'Seuil',
@@ -84,7 +91,10 @@ const calculPlan = async (objectif, donneesUtilisateur, ht) => {
         const fin = dayjs(date_objectif)
         var jours = fin.diff(debut, 'day')
         var seances = []
+<<<<<<< HEAD
 
+=======
+>>>>>>> production
         for (let i = 0; i < jours; i += 7) {
             let debut_semaine = debut.add(i / 7, 'week')
             let sem = await defSemaine(
@@ -148,7 +158,11 @@ const choixSeances = async (
     var jours_entrainements = jourEntrainement(
         donneesUtilisateur.nombre_seance_semaine
     )
+<<<<<<< HEAD
     console.log(debut.format('DD/MM/YYYY'), semaine_passee)
+=======
+
+>>>>>>> production
     // Calcul SSE et choix des jours d'entrainements
     if (semaine_passee >= 0) {
         if (semaine_passee > 1) {
@@ -175,7 +189,10 @@ const choixSeances = async (
 
     // Def type
     let seances_possible = seances.Foncier
+<<<<<<< HEAD
     console.log(seances)
+=======
+>>>>>>> production
     if (semaine_passee < 22) {
         if (semaine_passee < 18) {
             if (semaine_passee < 16) {

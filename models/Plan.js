@@ -1,35 +1,29 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+'use strict'
 
-const PlanSchema = new Schema({
-    // Connexion avec les collections de données de l'utilisateur
-    _utilisateur: {
-        type: Schema.Types.ObjectId,
-        ref: 'Utilisateur',
-    },
-    _donnees_utilisateur: {
-        type: Schema.Types.ObjectId,
-        ref: 'DonneesUtilisateur',
-    },
+const prisma = require('../lib/prisma')
 
-    // Duree du plan
-    date_debut: {
-        type: Date,
-        default: Date.now(),
-    },
-    date_fin: {
-        type: Date,
-        required: true,
-    },
+const Plan = {}
 
-    // Connexions aux collections de données de séances et d'entrainement
-    SeancesDefinies: {
-        type: Array,
-        example: [
-            'idSeancexx1',
-            'Sun Aug 16 2020 11:21:33 GMT+0200 (GMT+02:00)',
-        ],
-    },
-})
+function toLegacy(row) {
+    if (!row) return null
+    return {
+        _id: row.id,
+        id: row.id,
+        _utilisateur: row.utilisateurId,
+        _donnees_utilisateur: row.donneesUtilisateurId,
+        date_debut: row.dateDebut,
+        date_fin: row.dateFin,
+        SeancesDefinies: row.seancesDefinies,
+    }
+}
 
-module.exports = mongoose.model('Plan', PlanSchema)
+Plan.find = async function find(q) {
+    const rows = await prisma.plan.findMany({
+        where: {
+            utilisateurId: String(q._utilisateur),
+        },
+    })
+    return rows.map(toLegacy)
+}
+
+module.exports = Plan

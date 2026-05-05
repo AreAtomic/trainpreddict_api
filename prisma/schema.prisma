@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  id           String   @id @default(cuid())
+  prenom       String?
+  nom          String
+  type         String   @default("Coureur")
+  email        String   @unique
+  motDePasse   String
+  codeSecurite Int?
+  isConfirmed  Boolean  @default(false)
+  onboardingComplete Boolean @default(false)
+  onboardingStep     Int     @default(0)
+
+  structureId  String?
+  structure    Utilisateur?  @relation("StructureMembers", fields: [structureId], references: [id])
+  membres      Utilisateur[] @relation("StructureMembers")
+
+  profil             Profil?
+  donneesUtilisateur DonneesUtilisateur?
+  infoSup            InfoSup?
+  parametreStructure ParametreStructure?  @relation("StructureParametres")
+  entrainements      Entrainement[]
+  seances            Seance[]
+  blocs              Bloc[]
+  coursesAthlete     Course[]             @relation("CourseAthlete")
+  coursesOrganisme   Course[]             @relation("CourseOrganisme")
+  objectifs          Objectif[]
+  plans              Plan[]
+  assistant          Assistant?
+  articles           Article[]
+  images             Image[]
+
+  @@index([email])
+}
+
+model Profil {
+  id            String      @id @default(cuid())
+  utilisateurId String      @unique
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  fcfs          Int         @default(200)
+  pfs           Int         @default(300)
+  age           Int         @default(14)
+  poids         Float       @default(75)
+}
+
+model DonneesUtilisateur {
+  id                  String      @id @default(cuid())
+  utilisateurId       String      @unique
+  utilisateur         Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  experience          Int?
+  heureSommeil        Float?
+  tempsRecupMax       Float?
+  sse                 Float       @default(700)
+  nombreHeureSemaine  Float
+  nombreSeanceSemaine Int
+  joursRepos          Json        @default("[]")
+  musculation         Boolean
+  ppg                 Boolean     @default(true)
+  etirement           Boolean
+  foncier             String
+  style               String
+  pointFaible         String
+
+  plans Plan[]
+}
+
+model InfoSup {
+  id            String      @id @default(cuid())
+  utilisateurId String      @unique
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  naissance     String
+  adresse       String
+  decouverte    String
+  categorie     String
+  telephone     String
+}
+
+model ParametreStructure {
+  id            String      @id @default(cuid())
+  structureId   String      @unique
+  structure     Utilisateur @relation("StructureParametres", fields: [structureId], references: [id], onDelete: Cascade)
+  coureurCourbes Boolean    @default(false)
+  seancePartage  Boolean    @default(true)
+  seanceOwn      Boolean    @default(true)
+}
+
+model Entrainement {
+  id                   String      @id @default(cuid())
+  utilisateurId        String
+  utilisateur          Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  date                 String
+  typeEntrainement     Json        @default("[]")
+  type                 String
+  duree                String
+  distance             String
+  deniv                Float
+  fcMoy                Float?
+  fcMax                Float?
+  cadenceMoy           Float?
+  cadenceMax           Float?
+  powerMoy             Float?
+  powerMax             Float?
+  normalizedPower      Float?
+  calories             Float?
+  specifique           Json        @default("[]")
+  fcSeconds            Json        @default("[]")
+  powerSeconds         Json        @default("[]")
+  cadSeconds           Json        @default("[]")
+  n10Fc                Json        @default("[]")
+  n10Power             Json        @default("[]")
+  n30Fc                Json        @default("[]")
+  n30Power             Json        @default("[]")
+  description          String?
+  zoneFc               Json        @default("[]")
+  powerZone            Json        @default("[]")
+  Z1                   String
+  Z2                   String
+  Z3                   String
+  Z4                   String
+  Z5                   String
+  Z6                   String?
+  Z7                   String?
+  intensiteTravail     Float
+  scoreStressEntrainement Float
+  ressentis            Float       @default(0)
+  pointCarte           Json        @default("[]")
+  statistiques         Boolean     @default(false)
+  tableauStatistiques  Json        @default("{}")
+  joursDone            CalendrierJour[] @relation("JourDone")
+
+  @@index([date])
+  @@index([utilisateurId])
+}
+
+model Seance {
+  id                      String      @id @default(cuid())
+  utilisateurId           String?
+  utilisateur             Utilisateur? @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  type                    Json
+  titre                   String
+  duree                   String
+  estimationDistance      Float
+  estimationDeniv         Float
+  specifique              Json        @default("[]")
+  description             String?
+  descripiqueDescription  String?
+  Z1                      String
+  Z2                      String
+  Z3                      String
+  Z4                      String
+  Z5                      String
+  Z6                      String
+  Z7                      String
+  puissanceMoyenne        Float
+  chargeEntrainementEstime Float
+  intensiteTravail        Float
+  scoreStressEntrainement Float
+  public                  Boolean     @default(true)
+  joursPlanned            CalendrierJour[] @relation("JourPlannedSeance")
+
+  @@index([titre])
+}
+
+model Bloc {
+  id         String      @id @default(cuid())
+  specifique Json
+  certified  Boolean     @default(false)
+  creatorId  String?
+  creator    Utilisateur? @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+}
+
+model Course {
+  id            String      @id @default(cuid())
+  utilisateurId String?
+  organismeId   String?
+  utilisateur   Utilisateur? @relation("CourseAthlete", fields: [utilisateurId], references: [id], onDelete: Cascade)
+  organisme     Utilisateur? @relation("CourseOrganisme", fields: [organismeId], references: [id], onDelete: Cascade)
+  date          String
+  type          String      @default("Cyclosportive")
+  titre         String
+  description   String?
+  denivele      String
+  distance      Float
+  temps         String
+  sse           Float       @default(200)
+  course        Boolean     @default(true)
+  joursPlanned  CalendrierJour[] @relation("JourPlannedCourse")
+
+  @@index([date])
+}
+
+model Objectif {
+  id            String      @id @default(cuid())
+  utilisateurId String
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  date          String
+  type          String      @default("Vallon")
+  resultatVise  String?     @default("Victoire")
+  titre         String
+  description   String?
+  denivele      String
+  distance      Float
+  temps         String
+  realise       Boolean     @default(false)
+  sse           Float       @default(200)
+  joursObjectif CalendrierJour[] @relation("JourObjectif")
+
+  @@index([date])
+}
+
+model Plan {
+  id                   String              @id @default(cuid())
+  utilisateurId        String
+  utilisateur          Utilisateur         @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  donneesUtilisateurId String?
+  donneesUtilisateur   DonneesUtilisateur? @relation(fields: [donneesUtilisateurId], references: [id])
+  dateDebut            DateTime            @default(now())
+  dateFin              DateTime
+  seancesDefinies      Json                @default("[]")
+}
+
+model Assistant {
+  id            String      @id @default(cuid())
+  utilisateurId String      @unique
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  /// Calendrier au format historique Mongo (years / weeks / days) — source de vérité runtime
+  embeddedYears Json?
+  annees        CalendrierAnnee[]
+}
+
+model CalendrierAnnee {
+  id            String    @id @default(cuid())
+  assistantId   String
+  assistant     Assistant @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+  year          String
+  statsPlanned  Json      @default("{}")
+  statsDone     Json      @default("{}")
+  semaines      CalendrierSemaine[]
+
+  @@unique([assistantId, year])
+}
+
+model CalendrierSemaine {
+  id            String          @id @default(cuid())
+  anneeId       String
+  annee         CalendrierAnnee @relation(fields: [anneeId], references: [id], onDelete: Cascade)
+  week          Int
+  statsPlanned  Json            @default("{}")
+  statsDone     Json            @default("{}")
+  jours         CalendrierJour[]
+
+  @@unique([anneeId, week])
+}
+
+model CalendrierJour {
+  id               String            @id @default(cuid())
+  semaineId        String
+  semaine          CalendrierSemaine @relation(fields: [semaineId], references: [id], onDelete: Cascade)
+  date             String            @unique
+  formPlanned      Float             @default(0)
+  formDone         Float             @default(0)
+  tirednessPlanned Float             @default(0)
+  tirednessDone    Float             @default(0)
+  statsPlanned     Json              @default("{}")
+  statsDone        Json              @default("{}")
+  comments         Json              @default("[]")
+
+  plannedSeances   Seance[]      @relation("JourPlannedSeance")
+  plannedCourses   Course[]      @relation("JourPlannedCourse")
+  objectifs        Objectif[]    @relation("JourObjectif")
+  done             Entrainement[] @relation("JourDone")
+}
+
+model Article {
+  id          String      @id @default(cuid())
+  writerId    String?
+  writer      Utilisateur? @relation(fields: [writerId], references: [id], onDelete: SetNull)
+  title       String
+  content     Json        @default("[]")
+  coverId     String?
+  cover       Image?      @relation(fields: [coverId], references: [id])
+  state       String?
+  creation    String?
+  lastUpdate  String?
+}
+
+model Image {
+  id           String      @id @default(cuid())
+  ownerId      String?
+  owner        Utilisateur? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  fileId       String?
+  name         String?
+  thumbnailUrl String?
+  url          String?
+  articles     Article[]
+}
