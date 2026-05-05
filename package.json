@@ -13,6 +13,12 @@
   },
   "author": "Areatomic",
   "license": "ISC",
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "server.test.js"
+    ]
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "@react-email/components": "^1.0.12",

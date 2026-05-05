@@ -24,16 +24,9 @@ let tokenValidation = async (req, res, next) => {
         req.token = token
         try {
             const decodedToken = verifyToken(req.token, next)
-<<<<<<< HEAD
-            console.log(decodedToken)
-            if (!decodedToken) {
-                res.status(400).json({
-                    status: 400,
-=======
             if (!decodedToken) {
                 res.status(401).json({
                     status: 401,
->>>>>>> production
                     message: 'User does not have  token',
                 })
             } else if (decodedToken.expired) {
@@ -52,11 +45,7 @@ let tokenValidation = async (req, res, next) => {
                     _id: utilisateur._id,
                     email: utilisateur.email,
                     prenom: utilisateur.prenom,
-<<<<<<< HEAD
-                    nom: utilisateur.prenom,
-=======
                     nom: utilisateur.nom,
->>>>>>> production
                     token: utilisateur.token,
                     type: utilisateur.type,
                 }
@@ -70,31 +59,21 @@ let tokenValidation = async (req, res, next) => {
                     _id: utilisateur._id,
                     email: utilisateur.email,
                     prenom: utilisateur.prenom,
-                    nom: utilisateur.prenom,
+                    nom: utilisateur.nom,
                     token: utilisateur.token,
                     type: utilisateur.type,
                 }
                 next()
             }
         } catch (err) {
-<<<<<<< HEAD
-            res.status(400).json({
-                status: 400,
-=======
             res.status(401).json({
                 status: 401,
->>>>>>> production
                 message: 'Error with your token',
             })
         }
     } else {
-<<<<<<< HEAD
-        res.status(400).json({
-            status: 400,
-=======
         res.status(401).json({
             status: 401,
->>>>>>> production
             message: 'User does not have token',
         })
     }

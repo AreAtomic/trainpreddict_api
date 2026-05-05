@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const connectDB = require('./config/db')
+const { connectDB } = require('./config/db')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
 const fs = require('fs')
@@ -9,7 +9,7 @@ const https = require('https')
 /*
  * Connexion Database *
  */
-connectDB()
+void connectDB()
 
 /**
  * Config env

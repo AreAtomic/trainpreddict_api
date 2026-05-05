@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const connectDB = require('./config/db')
+const { connectDB } = require('./config/db')
 const fileUpload = require('express-fileupload')
 const favicon = require('express-favicon')
 const path = require('path')
@@ -9,15 +9,15 @@ const https = require('https')
 const fs = require('fs')
 const dotenv = require('dotenv')
 
-/*
- * Connexion Database *
- */
-connectDB()
-
 /**
  * dotenv config
  */
 dotenv.config()
+
+/*
+ * Connexion Database *
+ */
+void connectDB()
 
 /*
  * Setting express *
