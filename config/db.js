@@ -4,31 +4,20 @@
 const dotenv = require('dotenv')
 dotenv.config()
 
-/**
- * Config mongo
- */
-const mongoose = require('mongoose')
+const prisma = require('../lib/prisma')
 
 const connectDB = async () => {
     try {
-        Object.keys(mongoose.connection.models).forEach((key) => {
-            delete mongoose.connection.models[key]
-        })
-        await mongoose.connect(process.env.DATABASE, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
-        console.log('Connection to Mongo DB done')
-        return
+        await prisma.$connect()
+        console.log('PostgreSQL connecté (Prisma)')
     } catch (err) {
         console.error(err.message)
-        // Exit process with failure
         process.exit(1)
     }
 }
 
-const disconnectDB = () => {
-    mongoose.connection.close()
+const disconnectDB = async () => {
+    await prisma.$disconnect()
 }
 
 module.exports = { connectDB, disconnectDB }

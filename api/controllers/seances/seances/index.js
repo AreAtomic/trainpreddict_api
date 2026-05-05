@@ -1,5 +1,4 @@
 //* MODULES *//
-const mongo = require('mongodb')
 //* MODELS *//
 const Seance = require('../../../../models/Seance')
 const ParametreStructure = require('../../../../models/ParametreStructure')
@@ -93,8 +92,7 @@ exports.createSeance = async (req, res) => {
  * @description Permet de récupérer une séances avec son id
  */
 exports.getSeanceById = async (req, res) => {
-    const seance_id = new mongo.ObjectID(req.params.id)
-    const seance = await Seance.findOne({ _id: seance_id })
+    const seance = await Seance.findOne({ _id: req.params.id })
 
     return res.status(200).json({ data: seance })
 }

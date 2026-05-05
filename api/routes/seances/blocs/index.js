@@ -8,7 +8,7 @@ const BlocsControllers = require('../../../controllers/seances/blocs')
 
 router.post('/', [jwtauth], BlocsControllers.createBloc)
 router.put('/:id', [jwtauth], BlocsControllers.putBloc)
-router.delete('/:id', [jwtauth], Blocs)
+router.delete('/:id', [jwtauth], BlocsControllers.deleteBloc)
 router.get('/', [jwtauth], BlocsControllers.getAllBlocs)
 router.get('/own', [jwtauth], BlocsControllers.getUserBlocs)
 

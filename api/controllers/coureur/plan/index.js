@@ -19,9 +19,16 @@ const Profil = require('../../../../models/Profil')
 
 exports.createPlan = async (req, res) => {
     try {
+        const userId = req.body.userId
+        console.log('[Plan API] createPlan: debut', { userId })
+
         const utilisateur = await Utilisateur.findOne({
-            _id: req.body.userId,
+            _id: userId,
         })
+        console.log('[Plan API] utilisateur charge', {
+            ok: !!utilisateur,
+        })
+
         const profil = await Profil.findOne({ _utilisateur: utilisateur._id })
         const donneesUtilisateur = await DonneesUtilisateur.findOne({
             _utilisateur: utilisateur._id,
@@ -31,6 +38,12 @@ exports.createPlan = async (req, res) => {
         }).sort({ date: -1 })
         const calendar = await AssistantModel.findOne({
             _utilisateur: utilisateur._id,
+        })
+        console.log('[Plan API] donnees chargees', {
+            profil: !!profil,
+            donneesUtilisateur: !!donneesUtilisateur,
+            objectifs: objectifs?.length ?? 0,
+            calendar: !!calendar,
         })
 
         plan = new Plan(
@@ -43,7 +56,11 @@ exports.createPlan = async (req, res) => {
 
         await plan.possibleSeance(true, false, true)
         plan.seanceMaximum(objectifs[0])
-        plan.createPlanForObjectifs()
+        console.log('[Plan API] generation plan (async)...')
+        await plan.createPlanForObjectifs()
+        console.log('[Plan API] createPlan: reponse 200', {
+            userId: String(utilisateur._id),
+        })
 
         return res
             .status(200)

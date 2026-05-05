@@ -1,115 +1,98 @@
-const SibApiV3Sdk = require('sib-api-v3-sdk')
-const defaultClient = SibApiV3Sdk.ApiClient.instance
+const React = require('react')
+const { Resend } = require('resend')
+const { VerifyEmail } = require('./email/react-email/VerifyEmail')
+const { WelcomeEmail } = require('./email/react-email/WelcomeEmail')
+const { PasswordResetEmail } = require('./email/react-email/PasswordResetEmail')
 
-const apiKey = defaultClient.authentications['api-key']
-apiKey.apiKey = process.env.SENDINBLUE
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
+let resendClient
+function getResend() {
+    const key = process.env.RESEND_API_KEY
+    if (!key || !String(key).trim()) return null
+    if (!resendClient) resendClient = new Resend(key)
+    return resendClient
+}
 
-exports.validationEmail = (email, firstName, lastName, id) => {
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
+function getFrom() {
+    const from = process.env.EMAIL_FROM
+    if (!from) {
+        throw new Error(
+            'EMAIL_FROM manquant (ex. TrainPredict <noreply@votredomaine.com>)'
+        )
+    }
+    return from
+}
 
-    sendSmtpEmail = {
-        to: [
-            {
-                email: email,
-                name: `${firstName} ${lastName}`,
-            },
-        ],
-        templateId: 8,
-        params: {
-            PRENOM: firstName,
-            LINK: `${process.env.APP_URL}/verification/${id}`,
-            EMAIL: email,
-        },
-        headers: {
-            'X-Mailin-custom':
-                'custom_header_1:custom_value_1|custom_header_2:custom_value_2',
-        },
+function send({ to, subject, react }) {
+    const resend = getResend()
+    if (!resend) {
+        console.error(
+            '[email] RESEND_API_KEY non défini — envoi ignoré (dev ?)'
+        )
+        return Promise.resolve({ skipped: true })
     }
 
-    apiInstance.sendTransacEmail(sendSmtpEmail).then(
-        function (data) {
-            console.log(
-                'API called successfully. Returned data: ' +
-                    JSON.stringify(data)
-            )
-            return
+    const payload = {
+        from: getFrom(),
+        to,
+        subject,
+        react,
+    }
+    if (process.env.EMAIL_REPLY_TO) {
+        payload.replyTo = process.env.EMAIL_REPLY_TO
+    }
+
+    return resend.emails.send(payload).then(
+        (result) => {
+            if (result.error) {
+                console.error('[email] Resend:', result.error)
+                throw new Error(result.error.message || String(result.error))
+            }
+            return result
         },
-        function (error) {
-            console.error(error)
-            throw error
+        (err) => {
+            console.error('[email] Resend:', err)
+            throw err
         }
     )
+}
+
+exports.validationEmail = (email, firstName, lastName, id) => {
+    const base = (process.env.APP_URL || '').replace(/\/$/, '')
+    const verificationLink = `${base}/verification/${id}`
+
+    return send({
+        to: email,
+        subject: 'Confirmez votre compte TrainPredict',
+        react: React.createElement(VerifyEmail, {
+            firstName,
+            lastName,
+            verificationLink,
+        }),
+    })
 }
 
 exports.welcomeEmail = (email, firstName, lastName) => {
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
+    const appUrl = process.env.APP_URL || ''
 
-    sendSmtpEmail = {
-        to: [
-            {
-                email: email,
-                name: `${firstName} ${lastName}`,
-            },
-        ],
-        templateId: 7,
-        params: {
-            PRENOM: firstName,
-            EMAIL: email,
-        },
-        headers: {
-            'X-Mailin-custom':
-                'custom_header_1:custom_value_1|custom_header_2:custom_value_2',
-        },
-    }
-
-    apiInstance.sendTransacEmail(sendSmtpEmail).then(
-        function (data) {
-            console.log(
-                'API called successfully. Returned data: ' +
-                    JSON.stringify(data)
-            )
-            return
-        },
-        function (error) {
-            console.error(error)
-            throw error
-        }
-    )
+    return send({
+        to: email,
+        subject: 'Bienvenue sur TrainPredict',
+        react: React.createElement(WelcomeEmail, {
+            firstName,
+            lastName,
+            appUrl,
+        }),
+    })
 }
 
 exports.passwordReinitialisation = (email, firstName, lastName, code) => {
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
-
-    sendSmtpEmail = {
-        to: [
-            {
-                email: email,
-                name: `${firstName} ${lastName}`,
-            },
-        ],
-        templateId: 10,
-        params: {
-            PRENOM: firstName,
-            CODE: code,
-        },
-        headers: {
-            'X-Mailin-custom':
-                'custom_header_1:custom_value_1|custom_header_2:custom_value_2',
-        },
-    }
-
-    apiInstance.sendTransacEmail(sendSmtpEmail).then(
-        function (data) {
-            console.log(
-                'API called successfully. Returned data: ' +
-                    JSON.stringify(data)
-            )
-            return
-        },
-        function (error) {
-            console.error(error)
-            throw error
-        }
-    )
+    return send({
+        to: email,
+        subject: 'Réinitialisation de votre mot de passe TrainPredict',
+        react: React.createElement(PasswordResetEmail, {
+            firstName,
+            lastName,
+            code: String(code),
+        }),
+    })
 }

@@ -31,15 +31,34 @@ exports.Plan = class {
         this.calendar = calendar
     }
 
-    createPlanForObjectifs = () => {
+    _planLog(phase, detail = {}) {
+        const userId = this.user && (this.user._id ?? this.user.id)
+        console.log(`[Plan] ${phase}`, {
+            userId: userId != null ? String(userId) : undefined,
+            ...detail,
+        })
+    }
+
+    createPlanForObjectifs = async () => {
+        this._planLog('createPlanForObjectifs:début', {
+            objectifs: this.objectifs?.length ?? 0,
+        })
         if (this.checkObjectifCreated()) {
             const firstDay = dayjs()
 
-            this.objectifs.forEach((objectif) => {
+            for (const objectif of this.objectifs) {
                 if (dayjs(objectif.date).isAfter(firstDay)) {
-                    this.generatePlanObjectif(objectif, firstDay)
+                    this._planLog('objectif:traitement', {
+                        objectifId: String(objectif._id ?? objectif.id),
+                        dateCible: objectif.date,
+                    })
+                    await this.generatePlanObjectif(objectif, firstDay)
+                    this._planLog('objectif:ok', {
+                        objectifId: String(objectif._id ?? objectif.id),
+                    })
                 }
-            })
+            }
+            this._planLog('createPlanForObjectifs:terminé', { ok: true })
         } else {
             throw 'Aucun objectifs trouvé'
         }
@@ -49,17 +68,25 @@ exports.Plan = class {
         return this.objectifs.length > 0
     }
 
-    generatePlanObjectif = (objectif, startingDay) => {
+    generatePlanObjectif = async (objectif, startingDay) => {
         const nombreSemaine = this.getNumberOfEntireWeek(
             startingDay,
             objectif.date
         )
+        this._planLog('generatePlanObjectif', {
+            nombreSemaine,
+            voie:
+                nombreSemaine < 8 ? 'highIntensity (<8 sem.)' : 'normalIntensity',
+        })
 
         if (nombreSemaine < 8) {
             this.highIntensityPattern()
         } else {
-            // TODO: update calendar with export of trainings
-            this.normalIntensityPattern(nombreSemaine, startingDay, objectif)
+            await this.normalIntensityPattern(
+                nombreSemaine,
+                startingDay,
+                objectif
+            )
         }
     }
 
@@ -71,6 +98,12 @@ exports.Plan = class {
     }
 
     normalIntensityPattern = async (nombreSemaine, startingDay, objectif) => {
+        this._planLog('normalIntensity:début', {
+            nombreSemaine,
+            startingDay: startingDay?.format
+                ? startingDay.format('YYYY-MM-DD')
+                : String(startingDay),
+        })
         const weeksOfSharphingBloc = nombreSemaine % 4
         const weeksOfNormalBlocs = nombreSemaine - weeksOfSharphingBloc
         const seancesPossible = await this.possibleSeance(
@@ -78,8 +111,15 @@ exports.Plan = class {
             'any',
             this.donneesUtilisateur.musculation
         )
+        this._planLog('normalIntensity:séances_possibles_chargées', {
+            musculation: seancesPossible.musculation?.length ?? 0,
+            cyclismeFoncier: seancesPossible.cyclisme?.foncier?.length ?? 0,
+        })
 
         const seanceMaximum = await this.seanceMaximum(objectif)
+        this._planLog('normalIntensity:plafond_séance', {
+            sseMax: seanceMaximum.sse,
+        })
         let trainings = []
 
         const generateTrainings = (types, nombreJourEntrainement) => {
@@ -222,52 +262,79 @@ exports.Plan = class {
             }
         }
 
+        this._planLog('normalIntensity:grille_trainings_construite', {
+            jours: trainings.length,
+            avecSeance: trainings.filter((t) => t != null && t._id).length,
+        })
         await this.insertTrainingInPlan(startingDay, trainings)
+        this._planLog('normalIntensity:insertion_calendrier_ok', {
+            jours: trainings.length,
+        })
+        this._planLog('normalIntensity:rechargement_assistant...')
         this.calendar = await Assistant.findOne({ _utilisateur: this.user._id })
+        this._planLog('normalIntensity:terminé', {
+            calendarOk: !!this.calendar,
+        })
     }
 
     insertTrainingInPlan = async (startingDay, trainings) => {
-        await Promise.all(
-            trainings.map(async (training, index) => {
-                console.log('training Insertion', training)
-                const date = DateServices.dateToISOStringZero(
-                    dayjs(startingDay).add(index, 'day')
-                )
+        this._planLog('insertTrainingInPlan:début', {
+            jours: trainings.length,
+            debut: dayjs(startingDay).format('YYYY-MM-DD'),
+        })
+        const patches = []
+        for (let index = 0; index < trainings.length; index += 1) {
+            const training = trainings[index]
+            const date = DateServices.dateToISOStringZero(
+                dayjs(startingDay).add(index, 'day')
+            )
 
-                if (training !== null) {
-                    const statistiques = {
-                        time: training.duree,
-                        distance: training.estimation_distance,
-                        denivele: training.estimation_deniv,
-                        sse: training.score_stress_entrainement,
-                        nombreSeance: 1,
-                    }
-
-                    await Assistant.updateOne(
-                        {
-                            _utilisateur: this.user._id,
-                        },
-                        {
-                            $set: {
-                                'years.$[].weeks.$[].days.$[days].planned': [
-                                    training._id,
-                                ],
-                                'years.$[].weeks.$[].days.$[days].statistiques.planned':
-                                    [statistiques],
-                            },
-                        },
-                        {
-                            arrayFilters: [
-                                {
-                                    'days.date': date,
-                                },
-                            ],
-                        }
-                    )
+            // Repos explicite (null) ; undefined = liste de séances épuisée (bug logique semaine)
+            if (training != null && training._id) {
+                const statistiques = {
+                    time: training.duree,
+                    distance: training.estimation_distance,
+                    denivele: training.estimation_deniv,
+                    sse: training.score_stress_entrainement,
+                    nombreSeance: 1,
                 }
-                return date
+                patches.push({
+                    update: {
+                        $set: {
+                            'years.$[].weeks.$[].days.$[days].planned': [
+                                training._id,
+                            ],
+                            'years.$[].weeks.$[].days.$[days].statistiques.planned':
+                                [statistiques],
+                        },
+                    },
+                    options: {
+                        arrayFilters: [{ 'days.date': date }],
+                    },
+                })
+            }
+        }
+        this._planLog('insertTrainingInPlan:patches_prêts', {
+            patches: patches.length,
+            ignores: trainings.length - patches.length,
+        })
+        if (patches.length) {
+            this._planLog('insertTrainingInPlan:ecriture_bd...', {
+                patches: patches.length,
             })
-        )
+            await Assistant.updateManyEmbeddedPatches(
+                { _utilisateur: this.user._id },
+                patches
+            )
+            this._planLog('insertTrainingInPlan:ecriture_bd_ok', {
+                patches: patches.length,
+            })
+        } else {
+            this._planLog('insertTrainingInPlan:aucun_patch', {
+                note: 'repos uniquement ou séances invalides',
+            })
+        }
+        this._planLog('insertTrainingInPlan:terminé', { ok: true })
     }
 
     generateWeekWithPercentage = (percentage) => {

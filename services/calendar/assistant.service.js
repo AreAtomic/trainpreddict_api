@@ -14,7 +14,10 @@ const Assistant = require('../../models/Assistant')
 
 exports.generateYear = async (userId, year) => {
     let assistant = await Assistant.findOne({ _utilisateur: userId })
-    let years = assistant.years
+    let years =
+        assistant && Array.isArray(assistant.years)
+            ? [...assistant.years]
+            : []
 
     // Variables for weeks
     let weeks = []
@@ -155,7 +158,7 @@ exports.fixYear = async (userId, year) => {
         }
         if (days.length !== 0) {
             const weekToPush = {
-                ...weeks[week]._doc,
+                ...weeks[week],
                 week: weekNumber,
                 days: days,
             }

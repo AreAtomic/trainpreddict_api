@@ -227,7 +227,7 @@ exports.getCode = async (req, res) => {
 
     emailServices.passwordReinitialisation(email, user.prenom, user.nom, code)
 
-    return res.status(200).json({ user: { ...user._doc, code: codeHashed } })
+    return res.status(200).json({ user: { ...user, code: codeHashed } })
 }
 
 /**
@@ -276,7 +276,10 @@ exports.changePassword = async (req, res) => {
         const salt = await bcrypt.genSalt(hasher)
 
         user.mot_de_passe = await bcrypt.hash(newPassword, salt)
-        user.save()
+        await Utilisateur.findOneAndUpdate(
+            { email: email },
+            { $set: { mot_de_passe: user.mot_de_passe } }
+        )
         return res.status(200).json({
             message: `Identifiant changé avec succès`,
         })
